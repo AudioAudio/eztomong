@@ -1,0 +1,3138 @@
+<title>토몽이와 이지의 방</title>
+<style>:root{color-scheme:dark} html,body{background:#2a2160}</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+  <style>
+/* =========================================================
+ * 토몽이와 이지의 방 — 스타일 (v1.0)
+ * 승인 시안(art_direction 01·02) 기준: 라벤더 · 베이비핑크 · 크림 · 버터 옐로우,
+ * 하얀 크림 카드 + 라벤더 테두리, 보라 제목 pill, 노란 메인 버튼.
+ * UI 는 아직 개별 PNG 가 없어 CSS 로 그림. PNG 가 오면 같은 요소에 배경 이미지만 덮으면 됨.
+ * ========================================================= */
+:root {
+  --ink: #4b3a82;          /* 본문 글자 (진한 보라) */
+  --purple: #7b5cd6;       /* 제목 pill, 강조 */
+  --purple-2: #9d84ee;
+  --purple-deep: #3f2f8f;  /* 진화도 패널 */
+  --lavender: #e6dcff;
+  --lavender-2: #d6c7fb;   /* 테두리 */
+  --cream: #fffaf3;
+  --cream-2: #f8f2ff;
+  --pink: #ff8fbf;
+  --pink-2: #ff6fa8;
+  --butter: #ffe07a;
+  --butter-2: #ffc23d;
+  --gold-ink: #7a4a12;
+  --red-score: #e2557a;
+  --shadow: 0 10px 28px rgba(90, 60, 170, 0.25);
+  --font: 'Jua', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #2a2160; }
+body { font-family: var(--font); color: var(--ink); user-select: none; -webkit-user-select: none; touch-action: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+[data-ico] { display: inline-flex; width: 1em; height: 1em; flex: none; }
+[data-ico] img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* ---------- 16:9 스테이지 (자동 스케일) ---------- */
+#viewport { position: fixed; inset: 0; }
+#stage { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; overflow: hidden; background: #c9b8f2; }
+
+/* ---------- 화면 공통 ---------- */
+.screen, .overlay { position: absolute; inset: 0; display: none; }
+.screen.active, .overlay.active { display: block; animation: fadeIn 0.25s ease; }
+.overlay { background: rgba(60, 40, 130, 0.45); backdrop-filter: blur(3px); z-index: 50; }
+#overlay-confirm { z-index: 60; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* 배경: 이미지가 있으면 ui.js 가 background-image 로 덮음 */
+.bg-title    { background: radial-gradient(ellipse at 50% 30%, #f3e8ff 0%, #d9c6fb 45%, #a993ea 100%); }
+.bg-game     { background: linear-gradient(180deg, #cdb9f7 0%, #e7dafc 55%, #f7d9ec 100%); }
+.bg-gameover { background: radial-gradient(ellipse at 50% 25%, #8a73df 0%, #5a46b8 60%, #352a86 100%); }
+.screen[style*="background-image"] { background-size: cover; background-position: center; }
+
+/* ---------- 로딩 ---------- */
+/* 로딩 화면 (v4.0): 의뢰자 제공 그림 bg_loading.png (1672×941, 16:9) 을 화면에 꽉 차게. 제목·진행 막대는 아래 가운데 (그림 속 캐릭터·가구를 가리지 않게) */
+#screen-loading { background: #b9a5f0 url("assets/bg/bg_loading.png") center / cover no-repeat; }
+.loading-box { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); text-align: center; color: #fff; }
+.loading-title { display: none; }   /* 그림이 꽉 차 있어 글자를 얹으면 가구와 겹침 → 진행 막대만 */
+.loading-bar { width: 320px; height: 14px; border-radius: 7px; background: rgba(255,255,255,0.4); overflow: hidden; box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 2px 10px rgba(70, 40, 150, 0.45); }
+#loading-fill { display: block; height: 100%; width: 0; background: var(--butter-2); transition: width 0.2s; }
+
+/* ---------- 버튼 ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 56px; padding: 0 30px; border-radius: 999px; font-size: 22px;
+  transition: transform 0.08s, filter 0.15s, box-shadow 0.15s;
+}
+.btn:hover { filter: brightness(1.04); transform: translateY(-1px); }
+.btn:active { transform: translateY(2px); }
+.btn:disabled { filter: grayscale(0.5) opacity(0.6); cursor: default; transform: none; }
+.btn-primary {
+  background: linear-gradient(180deg, #fff3b8 0%, var(--butter) 45%, var(--butter-2) 100%);
+  color: var(--gold-ink); border: 3px solid #fff; box-shadow: 0 5px 0 #e9a52a, 0 10px 18px rgba(200, 140, 30, 0.3);
+}
+.btn-primary:active { box-shadow: 0 2px 0 #e9a52a; }
+.btn-secondary {
+  background: linear-gradient(180deg, #fff 0%, var(--cream-2) 60%, var(--lavender) 100%);
+  color: var(--purple); border: 3px solid #fff; box-shadow: 0 4px 0 var(--lavender-2), 0 8px 16px rgba(120, 90, 200, 0.2);
+}
+.btn-secondary:active { box-shadow: 0 1px 0 var(--lavender-2); }
+.btn-danger { background: linear-gradient(180deg, #ffb3cf, var(--pink-2)); color: #fff; border: 3px solid #fff; box-shadow: 0 4px 0 #e0558c; }
+.btn-xl { height: 92px; padding: 0 70px; font-size: 38px; gap: 14px; }
+.btn-sm { height: 40px; padding: 0 18px; font-size: 17px; }
+.btn [data-ico] { font-size: 0.95em; }
+
+/* 둥근 아이콘 버튼 (일시정지, 닫기) */
+.btn-round {
+  position: absolute; display: flex; align-items: center; justify-content: center;
+  width: 60px; height: 60px; border-radius: 50%; font-size: 26px;
+  background: linear-gradient(180deg, #fff, var(--lavender)); color: var(--purple);
+  border: 3px solid #fff; box-shadow: 0 4px 0 var(--lavender-2), 0 6px 14px rgba(120, 90, 200, 0.25);
+  transition: transform 0.08s;
+}
+.btn-round:hover { transform: scale(1.05); }
+.btn-round:active { transform: scale(0.95); }
+.btn-pause { right: 40px; top: 28px; width: 68px; height: 68px; font-size: 30px; color: #fff;
+  background: radial-gradient(circle at 35% 30%, #ffc0da, var(--pink-2)); box-shadow: 0 4px 0 #e0558c, 0 6px 16px rgba(255, 100, 160, 0.35); }
+.btn-close { right: -14px; top: -14px; width: 54px; height: 54px; font-size: 22px; z-index: 2; }
+
+/* 글자 달린 타일 버튼 (게임 종료: 홈으로 / 다시하기 / 랭킹) */
+.btn-tile {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  width: 128px; height: 86px; border-radius: 22px; font-size: 18px; color: var(--purple);
+  background: linear-gradient(180deg, #fff, var(--cream-2) 60%, var(--lavender));
+  border: 3px solid #fff; box-shadow: 0 4px 0 var(--lavender-2), 0 8px 14px rgba(120, 90, 200, 0.2);
+  transition: transform 0.08s;
+}
+.btn-tile [data-ico] { font-size: 30px; }
+.btn-tile.gold { color: var(--gold-ink); background: linear-gradient(180deg, #fff3b8, var(--butter) 45%, var(--butter-2)); box-shadow: 0 4px 0 #e9a52a, 0 8px 14px rgba(200, 140, 30, 0.3); }
+.btn-tile:hover { transform: translateY(-2px); }
+.btn-tile:active { transform: translateY(2px); }
+
+/* ---------- 01 타이틀 ---------- */
+.title-logo {
+  position: absolute; left: 50%; top: 40px; transform: translateX(-50%);
+  text-align: center; line-height: 0.95;
+}
+.title-logo img { display: block; width: 560px; height: 300px; }
+.logo-line1, .logo-line2 { display: block; font-size: 124px; -webkit-text-stroke: 8px #fff; paint-order: stroke fill; filter: drop-shadow(0 6px 0 rgba(123, 92, 214, 0.55)); }
+.logo-line1 { color: #a88cf2; }
+.logo-line2 { color: var(--butter-2); }
+.title-menu { position: absolute; left: 50%; top: 392px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 22px; }
+.title-sub { display: flex; gap: 16px; }
+.title-sub .btn { width: 170px; height: 58px; padding: 0; font-size: 24px; }
+.title-best {
+  position: absolute; right: 30px; top: 24px; display: flex; align-items: center; gap: 6px;
+  padding: 6px 16px; border-radius: 999px; background: rgba(255, 255, 255, 0.8); color: var(--purple); font-size: 20px;
+  border: 2px solid #fff; box-shadow: 0 4px 10px rgba(120, 90, 200, 0.2);
+}
+.title-best [data-ico] { color: var(--butter-2); }
+
+/* ---------- 02 플레이 HUD ---------- */
+#game-canvas { position: absolute; inset: 0; width: 1280px; height: 720px; }
+.hud-left { position: absolute; left: 40px; top: 28px; width: 230px; display: flex; flex-direction: column; gap: 18px; pointer-events: none; }
+
+.score-card {
+  padding: 12px 14px 12px; border-radius: 26px; text-align: center;
+  background: linear-gradient(180deg, #fff, var(--cream-2)); border: 3px solid #fff; box-shadow: var(--shadow), inset 0 0 0 2px var(--lavender);
+}
+.score-label { font-size: 20px; letter-spacing: 2px; color: var(--purple-2); }
+.score-value {
+  display: flex; align-items: center; justify-content: center; height: 66px; margin: 4px 0 10px;
+  border-radius: 18px; background: linear-gradient(180deg, #fff, var(--lavender)); color: var(--purple);
+  box-shadow: inset 0 0 0 2px var(--lavender-2); font-size: 44px; line-height: 1;
+}
+.score-value canvas { display: block; }
+.score-value.bump canvas, .score-value.bump { animation: bump 0.25s ease; }
+@keyframes bump { 50% { transform: scale(1.1); } }
+.best-row {
+  display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border-radius: 14px;
+  background: linear-gradient(180deg, #fffaf0, #fff1d6); color: var(--gold-ink); font-size: 20px;
+}
+.best-row [data-ico] { color: var(--butter-2); font-size: 22px; }
+.best-value { font-size: 28px; color: var(--gold-ink); max-width: 120px; display: inline-flex; align-items: center; }
+
+.next-box {
+  padding: 0 0 14px; border-radius: 26px; overflow: hidden; text-align: center;
+  background: linear-gradient(180deg, #fff, var(--cream-2)); border: 3px solid #fff; box-shadow: var(--shadow), inset 0 0 0 2px var(--lavender);
+}
+.next-label { height: 46px; line-height: 46px; font-size: 24px; color: #fff; letter-spacing: 2px; background: linear-gradient(180deg, var(--purple-2), var(--purple)); }
+.next-slot { height: 150px; margin: 14px 14px 0; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #f6f0ff, var(--lavender)); }
+
+.evo-panel {
+  position: absolute; right: 34px; top: 112px; width: 150px; padding: 10px 10px 12px; border-radius: 26px;
+  background: linear-gradient(180deg, #5d48b8, var(--purple-deep)); border: 3px solid #fff; box-shadow: var(--shadow);
+}
+.evo-title { color: #fff; text-align: center; font-size: 20px; margin-bottom: 6px; }
+.evo-list { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+.evo-list li { display: flex; align-items: center; gap: 10px; padding: 2px 8px; border-radius: 12px; height: 41px; color: #fff; }
+.evo-list li .evo-num {
+  width: 26px; height: 26px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; color: var(--gold-ink); background: linear-gradient(180deg, #fff3b8, var(--butter-2)); border: 2px solid #fff;
+}
+.evo-list li canvas { opacity: 0.95; }
+.evo-list li.locked canvas { opacity: 0.25; }   /* 그림 색은 건드리지 않고 투명도만 */
+.evo-list li.reached { background: rgba(255, 255, 255, 0.1); }
+.evo-list li.current { background: linear-gradient(90deg, #fff3b8, var(--butter-2)); box-shadow: 0 0 12px rgba(255, 220, 110, 0.8); }
+
+/* 새 발견 알림: 플레이 영역·드로퍼를 가리지 않도록 왼쪽 HUD 아래 빈 자리에 */
+.toast {
+  position: absolute; left: 40px; top: 474px; width: 230px; transform: translateY(12px);
+  display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 14px; border-radius: 22px;
+  background: #fff; color: var(--purple); font-size: 19px; line-height: 1.3; text-align: center; border: 3px solid var(--lavender);
+  opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; box-shadow: var(--shadow);
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ---------- 카드 공통 (일시정지 / 게임 종료 / 확인) ---------- */
+.card {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 420px; padding: 54px 34px 30px; border-radius: 32px;
+  background: linear-gradient(180deg, #fff, var(--cream) 50%, var(--cream-2)); border: 4px solid #fff;
+  box-shadow: 0 16px 40px rgba(60, 40, 140, 0.4), inset 0 0 0 3px var(--lavender);
+}
+.card-title {
+  position: absolute; left: 50%; top: -26px; transform: translateX(-50%); white-space: nowrap;
+  padding: 8px 46px; border-radius: 999px; font-size: 30px; color: #fff;
+  background: linear-gradient(180deg, #b49cff, var(--purple)); border: 4px solid #fff; box-shadow: 0 5px 0 #5b43b5;
+}
+.card-title.big { font-size: 40px; padding: 8px 56px; -webkit-text-stroke: 1px rgba(91, 67, 181, 0.4); }
+.card-body { text-align: center; }
+.card-body.vertical { display: flex; flex-direction: column; gap: 14px; }
+.card-body.vertical .btn { width: 100%; }
+
+/* ---------- 03 게임 종료 ---------- */
+.gameover-card { width: 540px; top: 112px; transform: translateX(-50%); padding: 56px 36px 28px; }
+.mascot-top {
+  position: absolute; left: 50%; top: -130px; transform: translateX(-50%);   /* 받은 mascot_gameover.png(440×300) 그대로, 캐릭터 몸통이 제목 위로 보이게 */
+  width: 220px; height: 150px; background: center bottom / contain no-repeat; pointer-events: none; z-index: -1;
+}
+.newbest-bubble {
+  position: absolute; right: -46px; top: 26px; display: none; padding: 12px 16px; border-radius: 26px;
+  background: #fff; color: var(--red-score); font-size: 16px; line-height: 1.25; text-align: center;
+  border: 3px solid #ffd3e4; box-shadow: 0 6px 16px rgba(255, 120, 170, 0.3); transform: rotate(6deg);
+}
+.newbest-bubble.show { display: block; animation: bump 0.9s ease infinite; }
+.result-label { font-size: 20px; color: var(--purple-2); letter-spacing: 2px; }
+.result-score { position: relative; display: inline-flex; align-items: center; justify-content: center; min-height: 72px; }
+#go-score { font-size: 62px; color: var(--purple); max-width: 360px; display: inline-flex; }
+.badge-new {
+  position: absolute; right: -54px; top: 8px; display: none; padding: 3px 10px; border-radius: 999px;
+  background: var(--pink-2); color: #fff; font-size: 15px;
+}
+.badge-new.show { display: inline-block; }
+.result-best { font-size: 20px; color: var(--gold-ink); }
+.result-tier { margin-top: 6px; font-size: 17px; color: var(--purple-2); display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; }
+
+/* 랭킹 등록 영역 */
+.rank-register {
+  position: relative; margin: 16px 0 0; padding: 26px 18px 14px; border-radius: 22px;
+  background: #fff; border: 3px solid var(--lavender); display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.section-pill {
+  position: absolute; left: 50%; top: -16px; transform: translateX(-50%); white-space: nowrap;
+  padding: 3px 22px; border-radius: 999px; font-size: 18px; color: #fff; background: linear-gradient(180deg, #b49cff, var(--purple));
+}
+.rank-msg { font-size: 17px; color: var(--ink); min-height: 22px; }
+.rank-msg.warn { color: var(--red-score); }
+.rank-register[data-state="done"] .rank-msg { color: #2f9e6a; }
+.rank-register[data-state="zero"] { display: none; }
+.rank-row { display: flex; gap: 8px; align-items: center; }
+.rank-input-wrap { position: relative; display: block; }
+.rank-input {
+  width: 250px; height: 48px; padding: 0 42px 0 18px; border-radius: 999px;
+  border: 3px solid var(--lavender-2); background: var(--cream-2); font: inherit; font-size: 20px; color: var(--ink);
+  outline: none; user-select: text; -webkit-user-select: text;
+}
+.rank-input-wrap [data-ico] { position: absolute; right: 16px; top: 14px; font-size: 20px; color: var(--purple-2); pointer-events: none; }
+.rank-input:focus { border-color: var(--butter-2); box-shadow: 0 0 0 3px rgba(255, 210, 90, 0.35); }
+.rank-input.shake { animation: shake 0.3s; }
+@keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.btn-register { height: 48px; padding: 0 24px; font-size: 20px; }
+.result-buttons { display: flex; justify-content: center; gap: 16px; margin-top: 18px; }
+
+/* ---------- 패널 공통 (도감 / 옵션 / 랭킹) ---------- */
+.panel {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; padding: 54px 34px 28px; border-radius: 34px;
+  background: linear-gradient(180deg, #fff, var(--cream) 40%, var(--cream-2)); border: 4px solid #fff;
+  box-shadow: 0 16px 40px rgba(60, 40, 140, 0.35), inset 0 0 0 3px var(--lavender);
+}
+.panel-sm { width: 560px; }
+.panel-head { position: absolute; left: 0; right: 0; top: -28px; display: flex; justify-content: center; pointer-events: none; }
+.head-pill {
+  display: flex; align-items: center; gap: 10px; padding: 8px 40px; border-radius: 999px;
+  font-size: 32px; color: var(--purple); background: #fff; border: 4px solid var(--lavender); box-shadow: 0 6px 14px rgba(120, 90, 200, 0.25);
+}
+.head-pill [data-ico] { color: var(--purple-2); }
+.panel-meta { position: absolute; right: 54px; top: 46px; font-size: 20px; color: var(--purple-2); }
+
+/* 05 도감 */
+.codex-panel { width: 980px; height: 640px; top: 52%; }
+.codex-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-top: 8px; }
+.codex-cell {
+  position: relative; height: 128px; border-radius: 20px; background: #fff; border: 3px solid var(--lavender);
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; padding-bottom: 8px;
+  cursor: pointer; transition: transform 0.1s;
+}
+.codex-cell:hover { transform: translateY(-3px); }
+.codex-cell.selected { border-color: var(--butter-2); box-shadow: 0 0 0 3px #fff1c2, 0 6px 14px rgba(255, 190, 60, 0.35); }
+.codex-cell .num {
+  position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+  width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--gold-ink); background: linear-gradient(180deg, #fff3b8, var(--butter-2)); border: 2px solid #fff;
+}
+.codex-cell .name { font-size: 15px; color: var(--ink); }
+.codex-cell.locked { background: #f5f2fb; }
+.codex-cell .lock-ico { display: block; opacity: 0.55; margin-bottom: 14px; }
+.codex-cell.locked .name { color: #a99fcf; }
+.codex-detail {
+  flex: 1; display: flex; align-items: center; gap: 28px; margin-top: 16px; padding: 14px 28px;
+  border-radius: 24px; background: #fff; border: 3px solid var(--lavender);
+}
+.codex-detail .d-img { flex: none; width: 170px; height: 170px; display: flex; align-items: center; justify-content: center; border-radius: 20px; background: linear-gradient(180deg, #faf6ff, var(--lavender)); }
+.codex-detail .d-name { font-size: 32px; color: var(--purple); }
+.codex-detail .d-size { font-size: 18px; color: var(--purple-2); margin-top: 2px; }
+.codex-detail .d-desc { font-size: 19px; line-height: 1.5; color: var(--ink); margin-top: 8px; max-width: 560px; }
+.codex-detail .d-meta { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.codex-detail .chip { padding: 3px 14px; border-radius: 999px; font-size: 16px; background: var(--lavender); color: var(--purple); }
+.codex-detail .chip b { font-weight: normal; margin-left: 6px; color: var(--ink); }
+
+/* 04 옵션 */
+.settings-list { display: flex; flex-direction: column; gap: 12px; }
+.setting-row {
+  display: flex; align-items: center; gap: 14px; height: 66px; padding: 0 20px; border-radius: 20px;
+  background: #fff; border: 3px solid var(--lavender); font-size: 22px; color: var(--ink);
+}
+.setting-row > [data-ico] { font-size: 26px; color: var(--purple-2); }
+.setting-row .s-label { flex: 1; }
+.setting-row input[type=range] { width: 210px; accent-color: var(--purple); }
+.toggle { position: relative; width: 74px; height: 36px; }
+.toggle input { position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 1; }
+.toggle-ui { position: absolute; inset: 0; border-radius: 999px; background: #ddd3f3; transition: background 0.2s; }
+.toggle-ui::before { content: 'OFF'; position: absolute; right: 10px; top: 8px; font-size: 14px; color: #8f84b8; }
+.toggle-ui::after { content: ''; position: absolute; left: 4px; top: 4px; width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: left 0.2s; }
+.toggle input:checked + .toggle-ui { background: var(--purple-2); }
+.toggle input:checked + .toggle-ui::before { content: 'ON'; left: 12px; right: auto; color: #fff; }
+.toggle input:checked + .toggle-ui::after { left: 42px; }
+
+/* 06 랭킹 */
+.ranking-panel { width: 640px; height: 600px; top: 52%; }
+.rank-tabs { display: flex; gap: 10px; margin-bottom: 12px; }
+.rank-tab {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 999px;
+  font-size: 20px; color: var(--purple); background: var(--lavender); border: 3px solid #fff;
+}
+.rank-tab.active { color: #fff; background: linear-gradient(180deg, #b49cff, var(--purple)); box-shadow: 0 3px 0 #5b43b5; }
+.ranking-list { list-style: none; flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding-right: 4px; }
+.ranking-list li {
+  display: grid; grid-template-columns: 44px 42px 1fr 100px 76px; align-items: center; gap: 10px;
+  min-height: 52px; padding: 4px 14px; border-radius: 16px; background: #fff; border: 2px solid var(--lavender); color: var(--ink);
+}
+.ranking-list li.latest { border-color: var(--butter-2); box-shadow: 0 0 0 2px #fff1c2; }
+.rank-badge {
+  width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--purple); background: var(--cream-2); border: 2px solid var(--lavender);
+}
+.rank-badge.r1 { background: linear-gradient(180deg, #fff3b8, #ffc23d); color: var(--gold-ink); border-color: #fff; }
+.rank-badge.r2 { background: linear-gradient(180deg, #f2f2fa, #c6c6dc); color: #5b5b78; border-color: #fff; }
+.rank-badge.r3 { background: linear-gradient(180deg, #ffe0c6, #e9a26f); color: #7a3f12; border-color: #fff; }
+.rank-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--lavender); }
+.ranking-list .name { font-size: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ranking-list .score { font-size: 24px; color: var(--red-score); text-align: right; max-width: 100px; display: flex; justify-content: flex-end; }
+.ranking-list .date { font-size: 13px; color: #a99fcf; text-align: right; }
+.ranking-empty { text-align: center; color: #a99fcf; font-size: 20px; padding: 60px 0; }
+.my-rank {
+  display: none; grid-template-columns: auto 44px 1fr 100px 76px; align-items: center; gap: 10px;
+  margin-top: 10px; min-height: 54px; padding: 4px 14px; border-radius: 16px;
+  background: linear-gradient(180deg, #fffaf0, #fff1d6); border: 2px solid #ffe3a3;
+}
+.my-rank.show { display: grid; }
+.my-rank .my-label { padding: 2px 10px; border-radius: 999px; font-size: 14px; color: #fff; background: var(--butter-2); white-space: nowrap; }
+.my-rank .my-pos { font-size: 22px; color: var(--gold-ink); text-align: center; }
+.my-rank .name { font-size: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.my-rank .score { font-size: 24px; text-align: right; display: flex; justify-content: flex-end; max-width: 100px; }
+.my-rank .date { font-size: 13px; color: #b9a06a; text-align: right; }
+.my-rank .hint { grid-column: 3 / -1; font-size: 17px; color: var(--gold-ink); }
+
+/* 확인 창 */
+.confirm-card { width: 420px; text-align: center; }
+.confirm-text { font-size: 21px; line-height: 1.5; color: var(--ink); margin: 6px 0 22px; white-space: pre-line; }
+.confirm-buttons { display: flex; gap: 14px; justify-content: center; }
+.confirm-buttons .btn { width: 150px; }
+
+/* 구름 토끼 장식 (그림이 있을 때만 보임) */
+.deco { position: absolute; display: none; pointer-events: none; }
+.deco.on { display: block; }
+.deco-title { left: 812px; top: 6px; width: 180px; transform: rotate(6deg); }
+.deco-settings { left: 300px; top: 92px; width: 120px; z-index: 0; transform: rotate(-10deg); }   /* 창 뒤에서 고개를 내밂 */
+.deco-ranking { left: 922px; top: 538px; width: 104px; z-index: 3; }
+.deco-gameover { left: 858px; top: 392px; width: 100px; z-index: 3; }
+.panel, .card { z-index: 1; }
+
+/* 숫자 이미지 */
+.num { white-space: nowrap; }
+.num-img { line-height: 0; }
+
+/* =========================================================
+ * 이미지 자리 표시 모드 (js/slots.js, ?slots 또는 F2)
+ * ========================================================= */
+#slot-layer { position: absolute; inset: 0; pointer-events: none; z-index: 999; }
+.slot-box { position: absolute; outline: 2px dashed #ff3d9a; outline-offset: -1px; background: rgba(255, 61, 154, 0.06); }
+.slot-box.bg { outline: 3px dashed #18c6e0; outline-offset: -3px; background: none; }
+.slot-tag {
+  position: absolute; left: 0; top: 0; max-width: 460px; padding: 2px 6px;
+  background: rgba(255, 61, 154, 0.92); color: #fff; font: 12px/1.3 sans-serif; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; border-bottom-right-radius: 4px;
+}
+.slot-tag.right { left: auto; right: 0; border-radius: 0 0 0 4px; }
+.slot-box.bg .slot-tag { top: auto; bottom: 0; max-width: none; background: rgba(24, 160, 190, 0.92); font-size: 14px; border-radius: 0 4px 0 0; }
+
+.rank-colhead { display: none; }   /* 랭킹 v2.8 그림 UI 에서만 보임 */
+
+</style>
+  <style>
+/* =========================================================
+ * 그림 UI (아트 v1.3 PNG) — 스테이지에 .ui-png 가 붙었을 때만 적용
+ *  - CONFIG.assets.uiKits.png 의 파일이 모두 있어야 켜짐. 하나라도 없으면 style.css 의 CSS UI 그대로
+ *  - 원칙: PNG 는 받은 그대로. 크기(background-size)와 위치만 정함. 색·자르기·필터 없음
+ *  - PNG 가 있는 요소는 CSS 로 그리던 배경·테두리·그림자를 끄고 PNG 만 보임
+ *  - PNG 가 없는 작은 요소(목록 줄, 칩 등)는 장식을 끄고 글자만 남김 → 필요하면 아트 요청 (ART_REQUEST_v1.4.md)
+ * ========================================================= */
+
+/* 공통: PNG 한 장을 요소 크기에 맞춰 깔기 */
+.ui-png .btn-start, .ui-png .title-sub .btn, .ui-png .title-best,
+.ui-png .score-card, .ui-png .next-box, .ui-png .evo-panel, .ui-png .btn-pause, .ui-png .toast,
+.ui-png .card, .ui-png .panel, .ui-png .card-title, .ui-png .head-pill,
+.ui-png .rank-input, .ui-png .btn-register, .ui-png .btn-tile, .ui-png .newbest-bubble, .ui-png .badge-new,
+.ui-png .codex-cell, .ui-png .codex-detail, .ui-png .rank-tab, .ui-png .rank-badge.r1, .ui-png .rank-badge.r2, .ui-png .rank-badge.r3,
+.ui-png .btn-close, .ui-png .toggle-ui, .ui-png .card-body.vertical .btn, .ui-png .confirm-buttons .btn, .ui-png .btn-sm,
+.ui-png .evo-num, .ui-png .codex-cell .num {
+  background-color: transparent; background-repeat: no-repeat; background-position: center; background-size: 100% 100%;
+  border: none; border-radius: 0; box-shadow: none; filter: none;
+}
+.ui-png .btn:hover, .ui-png .btn:active, .ui-png .btn-tile:hover, .ui-png .btn-tile:active,
+.ui-png .btn-round:hover, .ui-png .btn-round:active, .ui-png .codex-cell:hover { transform: none; filter: none; }
+.ui-png .btn:disabled { filter: none; opacity: 0.6; }
+
+/* ---------- 01 타이틀 ---------- */
+.ui-png .btn-start { width: 360px; height: 92px; padding: 0; background-image: url("assets/ui/btn_start_normal.png"); }
+.ui-png .btn-start:hover { background-image: url("assets/ui/btn_start_hover.png"); }
+.ui-png .btn-start:active { background-image: url("assets/ui/btn_start_pressed.png"); }
+.ui-png .title-sub .btn { width: 170px; height: 58px; background-image: url("assets/ui/btn_sub_normal.png"); }
+.ui-png .title-sub .btn:hover { background-image: url("assets/ui/btn_sub_hover.png"); }
+.ui-png .title-sub .btn:active { background-image: url("assets/ui/btn_sub_pressed.png"); }
+.ui-png .title-best { width: 130px; height: 38px; padding: 0; justify-content: center; background-image: url("assets/ui/ui_title_best.png"); }
+
+/* ---------- 02 플레이 ---------- */
+.ui-png .score-card { width: 230px; height: 177px; padding: 14px 16px 0; background-image: url("assets/ui/ui_score.png"); }
+.ui-png .score-value, .ui-png .best-row { background: none; box-shadow: none; }
+.ui-png .score-value { margin: 2px 0 6px; }
+.ui-png .next-box { width: 230px; height: 230px; padding: 0; overflow: visible; background-image: url("assets/ui/ui_next.png"); }
+.ui-png .next-label { background: none; color: var(--purple); height: 54px; line-height: 62px; }
+.ui-png .next-slot { background: none; height: 160px; margin: 0 14px; }
+.ui-png .evo-panel { width: 150px; height: 542px; padding: 22px 10px 10px; background-image: url("assets/ui/ui_evolution.png"); }
+.ui-png .evo-title { color: var(--purple); margin-bottom: 18px; position: relative; }   /* 그림 위쪽 흰 구름 위에 올라가므로 보라 글자 */
+.ui-png .evo-list { gap: 2px; }
+.ui-png .evo-list li { height: 40px; }
+.ui-png .evo-list li.reached { background: none; }
+.ui-png .evo-list li.current { width: 130px; background: url("assets/ui/evo_row_current.png") center / 100% 100% no-repeat; box-shadow: none; }   /* v1.4 evo_row_current 260×80 → 130×40 */
+.ui-png .evo-list li.current .evo-num { color: var(--gold-ink); }
+.ui-png .evo-num, .ui-png .codex-cell .num { border: none; background-image: url("assets/ui/badge_num.png"); color: var(--purple); }   /* v1.4 badge_num 52×52 → 26×26 */
+.ui-png .btn-pause { width: 68px; height: 68px; background-image: url("assets/ui/btn_pause_normal.png"); }
+.ui-png .btn-pause:active { background-image: url("assets/ui/btn_pause_pressed.png"); }
+.ui-png .toast { width: 230px; height: 90px; padding: 10px 16px; background-image: url("assets/ui/panel_toast.png"); }
+
+/* ---------- 카드·창 공통 ---------- */
+.ui-png .card-title, .ui-png .head-pill {
+  width: 290px; height: 80px; padding: 0; display: flex; align-items: center; justify-content: center; gap: 10px;
+  color: var(--purple); -webkit-text-stroke: 0; background-image: url("assets/ui/pill_title.png");
+}
+.ui-png .card-title { top: -40px; }
+.ui-png .panel-head { top: -40px; }
+
+/* 일시정지 */
+.ui-png .pause-card { width: 420px; height: 358px; padding: 62px 38px 0; background-image: url("assets/ui/panel_pause.png"); }
+.ui-png .card-body.vertical { gap: 12px; align-items: center; }
+.ui-png .card-body.vertical .btn, .ui-png .confirm-buttons .btn { width: 344px; height: 56px; padding: 0; }
+.ui-png .card-body.vertical .btn-primary, .ui-png .confirm-buttons .btn-danger { background-image: url("assets/ui/btn_wide_primary_normal.png"); color: var(--gold-ink); }
+.ui-png .card-body.vertical .btn-primary:hover, .ui-png .confirm-buttons .btn-danger:hover { background-image: url("assets/ui/btn_wide_primary_hover.png"); }
+.ui-png .card-body.vertical .btn-primary:active, .ui-png .confirm-buttons .btn-danger:active { background-image: url("assets/ui/btn_wide_primary_pressed.png"); }
+.ui-png .card-body.vertical .btn-secondary, .ui-png .confirm-buttons .btn-secondary { background-image: url("assets/ui/btn_wide_secondary_normal.png"); color: var(--purple); }
+.ui-png .card-body.vertical .btn-secondary:hover, .ui-png .confirm-buttons .btn-secondary:hover { background-image: url("assets/ui/btn_wide_secondary_hover.png"); }
+.ui-png .card-body.vertical .btn-secondary:active, .ui-png .confirm-buttons .btn-secondary:active { background-image: url("assets/ui/btn_wide_secondary_pressed.png"); }
+
+/* 확인 창: 받은 panel_confirm 은 420×325 고정 크기 → 버튼을 세로로 */
+.ui-png .confirm-card { width: 420px; height: 325px; padding: 60px 38px 0; background-image: url("assets/ui/panel_confirm.png"); }
+.ui-png .confirm-text { margin: 0 0 16px; min-height: 64px; display: flex; align-items: center; justify-content: center; }
+.ui-png .confirm-buttons { flex-direction: column-reverse; align-items: center; gap: 10px; }
+
+/* ---------- 03 게임 종료 ---------- */
+.ui-png .gameover-card { width: 540px; height: 501px; top: 176px; padding: 50px 36px 0; background-image: url("assets/ui/panel_gameover.png"); }
+/* v1.3 토끼(발이 캔버스 아래 끝)가 제목 pill(높이 80) 위로 얼굴을 내밀도록: 카드를 내리고 토끼를 pill 뒤에 */
+.ui-png .mascot-top { top: -166px; }
+.ui-png .newbest-bubble { width: 171px; height: 81px; padding: 0; display: none; align-items: center; justify-content: center; background-image: url("assets/ui/bubble_newbest.png"); }
+.ui-png .newbest-bubble.show { display: flex; }
+.ui-png .badge-new { width: 55px; height: 23px; padding: 0; line-height: 23px; text-align: center; color: var(--red-score); background-image: url("assets/ui/badge_new.png"); }
+.ui-png .rank-register { width: 470px; height: 118px; margin: 22px auto 0; padding: 16px 0 0; gap: 4px; border: none; border-radius: 0; background: url("assets/ui/panel_register.png") center / 100% 100% no-repeat; }
+.ui-png .section-pill { width: 120px; height: 28px; padding: 0; top: -14px; line-height: 28px; font-size: 16px; color: #fff; background: url("assets/ui/pill_small.png") center / 100% 100% no-repeat; }
+.ui-png .rank-register[data-state="zero"] { display: none; }
+.ui-png .rank-input { width: 250px; height: 48px; background-image: url("assets/ui/input_name.png"); }
+.ui-png .rank-input:focus { box-shadow: none; }
+.ui-png .btn-register { width: 94px; height: 48px; padding: 0; background-image: url("assets/ui/btn_register_normal.png"); }
+.ui-png .btn-register:hover { background-image: url("assets/ui/btn_register_hover.png"); }
+.ui-png .btn-register:active { background-image: url("assets/ui/btn_register_pressed.png"); }
+.ui-png .result-buttons { margin-top: 10px; }
+.ui-png .btn-tile { width: 128px; height: 86px; background-image: url("assets/ui/btn_tile_normal.png"); }
+.ui-png .btn-tile:active { background-image: url("assets/ui/btn_tile_pressed.png"); }
+.ui-png .btn-tile.gold { background-image: url("assets/ui/btn_tile_gold_normal.png"); }
+.ui-png .btn-tile.gold:active { background-image: url("assets/ui/btn_tile_gold_pressed.png"); }
+
+/* ---------- 창 (도감 / 옵션 / 랭킹) ---------- */
+.ui-png .btn-close { width: 54px; height: 54px; background-image: url("assets/ui/btn_close_normal.png"); }
+.ui-png .btn-close:active { background-image: url("assets/ui/btn_close_pressed.png"); }
+
+/* 도감 */
+.ui-png .codex-panel { width: 980px; height: 640px; padding: 62px 34px 26px; background-image: url("assets/ui/panel_codex.png"); }
+.ui-png .codex-cell { height: 128px; background-image: url("assets/ui/codex_cell.png"); }
+.ui-png .codex-cell.locked { background: url("assets/ui/codex_cell_locked.png") center / 100% 100% no-repeat; }
+.ui-png .codex-cell { padding-bottom: 14px; }
+.ui-png .codex-cell.selected { background-image: url("assets/ui/codex_cell_selected.png"); box-shadow: none; }
+.ui-png .codex-detail { flex: none; height: 255px; margin-top: 14px; background-image: url("assets/ui/panel_codex_detail.png"); }
+.ui-png .codex-detail .d-img { background: none; }
+.ui-png .codex-detail .chip {   /* v1.4 chip_left/mid/right: 양끝 15×26 고정, 가운데만 늘림 */
+  height: 26px; line-height: 26px; padding: 0 16px; border-radius: 0;
+  background: url("assets/ui/chip_left.png") left center / 15px 26px no-repeat, url("assets/ui/chip_right.png") right center / 15px 26px no-repeat, url("assets/ui/chip_mid.png") center / calc(100% - 28px) 26px no-repeat;
+}
+.ui-png .codex-detail .d-meta { gap: 18px; }
+
+/* 옵션 */
+.ui-png #screen-settings .panel { width: 560px; height: 390px; padding: 64px 34px 0; background-image: url("assets/ui/panel_settings.png"); }
+.ui-png .settings-list { gap: 4px; }
+.ui-png .setting-row { width: 492px; height: 66px; border: none; border-radius: 0; background: url("assets/ui/setting_row.png") center / 100% 100% no-repeat; }
+.ui-png .setting-row > [data-ico] { font-size: 34px; }
+.ui-png .setting-row input[type=range] {
+  -webkit-appearance: none; appearance: none; width: 210px; height: 22px; background: url("assets/ui/slider_track.png") center / 210px 16px no-repeat;
+}
+.ui-png .setting-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border: none; background: url("assets/ui/slider_thumb.png") center / 100% 100% no-repeat; }
+.ui-png .setting-row input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border: none; background: url("assets/ui/slider_thumb.png") center / 100% 100% no-repeat; }
+.ui-png .setting-row input[type=range]::-moz-range-track { background: transparent; }
+.ui-png .toggle-ui { background-color: transparent; background-image: url("assets/ui/toggle_off.png"); }
+.ui-png .toggle input:checked + .toggle-ui { background: url("assets/ui/toggle_on.png") center / 100% 100% no-repeat; }
+.ui-png .toggle-ui::after { display: none; }   /* 손잡이는 그림에 포함된 것으로 봄 (CSS 동그라미 끔) */
+.ui-png .toggle-ui::before, .ui-png .toggle input:checked + .toggle-ui::before { display: none; }   /* v1.4 토글은 손잡이 위치로 켜짐·꺼짐이 보여 ON/OFF 글자 끔 */
+.ui-png .btn-sm { width: 94px; height: 48px; padding: 0; color: #fff; background-image: url("assets/ui/btn_small_danger_normal.png"); }
+.ui-png .btn-sm:hover { background-image: url("assets/ui/btn_small_danger_hover.png"); }
+.ui-png .btn-sm:active { background-image: url("assets/ui/btn_small_danger_pressed.png"); }
+
+/* 랭킹 */
+.ui-png .ranking-panel { width: 640px; height: 600px; padding: 62px 34px 26px; background-image: url("assets/ui/panel_ranking.png"); }
+.ui-png .rank-tab { flex: none; width: 277px; height: 46px; background-image: url("assets/ui/rank_tab_off.png"); color: var(--purple); }
+.ui-png .rank-tab.active { background-image: url("assets/ui/rank_tab_on.png"); color: var(--purple); box-shadow: none; }
+.ui-png .ranking-list li { width: 572px; height: 52px; min-height: 52px; border: none; border-radius: 0; box-shadow: none; background: url("assets/ui/rank_row.png") center / 100% 100% no-repeat; }
+.ui-png .ranking-list li.latest { box-shadow: none; background-image: url("assets/ui/rank_row_latest.png"); }
+.ui-png .ranking-list li.latest .name { color: var(--gold-ink); }
+.ui-png .rank-badge { border: none; border-radius: 0; background: url("assets/ui/rank_badge_n.png") center / 100% 100% no-repeat; }
+.ui-png .rank-badge.r1 { background-image: url("assets/ui/rank_badge_1.png"); color: var(--gold-ink); }
+.ui-png .rank-badge.r2 { background-image: url("assets/ui/rank_badge_2.png"); color: #5b5b78; }
+.ui-png .rank-badge.r3 { background-image: url("assets/ui/rank_badge_3.png"); color: #7a3f12; }
+.ui-png .rank-avatar { background: none; }
+.ui-png .my-rank { width: 572px; height: 54px; min-height: 54px; border: none; border-radius: 0; background: url("assets/ui/my_rank_row.png") center / 100% 100% no-repeat; }
+.ui-png .my-rank .my-label { background: none; color: var(--gold-ink); padding: 0; }
+
+/* v1.5: pill_title_small 띠 수정본 → 이름이 짧은 창(도감·옵션·랭킹) 제목에 사용. 일시정지·종료·확인 창은 pill_title */
+.ui-png .head-pill { width: 200px; height: 66px; background-image: url("assets/ui/pill_title_small.png"); }
+.ui-png .panel-head { top: -33px; }
+
+/* v1.4 배경 오버레이 (선택): 화면 배경 위, 내용 아래 */
+.bg-overlay { position: absolute; inset: 0; pointer-events: none; background-position: center; background-size: 100% 100%; background-repeat: no-repeat; }
+.bg-overlay.ov-stars { animation: twinkle 3.2s ease-in-out infinite alternate; }
+@keyframes twinkle { from { opacity: 0.55; } to { opacity: 1; } }
+
+</style>
+  <style>
+/* =========================================================
+ * 타이틀 화면 아트 v2.2 — 스테이지에 .ui-title21 이 붙었을 때만 (assets/title/ 파일이 모두 있을 때)
+ *  - 받은 PNG 를 그대로, docs/TITLE_LAYOUT.json 의 x/y/w/h (1280×720 기준) 에 배치. 원본은 2배라 화면 크기로 줄여 그림
+ *  - 버튼 글자는 그림에 들어 있어 HTML 글자·아이콘은 숨김 (스크린리더용 이름은 유지)
+ *  - hover/pressed 는 그림 교체만. pressed 그림 안에 이미 4px 내림이 들어 있어 CSS 이동은 하지 않음
+ *  - 로고에 토끼가 있어 기존 타이틀 토끼 장식(deco_rabbit_title)은 숨김
+ * ========================================================= */
+#stage.ui-title21 .title-logo {
+  left: 334px; top: 61px; width: 610px; height: 428px; transform: none;
+  background: url("assets/title/title_logo_with_bunny.png") center / 100% 100% no-repeat;
+}
+#stage.ui-title21 .title-logo > * { display: none; }
+#stage.ui-title21 .deco-title { display: none !important; }
+
+#stage.ui-title21 .title-menu { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform: none; display: block; pointer-events: none; }
+#stage.ui-title21 .title-sub { display: block; }
+#stage.ui-title21 .title-menu .btn {
+  position: absolute; padding: 0; pointer-events: auto;
+  color: transparent; font-size: 0; text-shadow: none;
+  background-color: transparent; background-repeat: no-repeat; background-position: center; background-size: 100% 100%;
+  border: none; border-radius: 0; box-shadow: none; filter: none; transform: none; transition: none;
+}
+#stage.ui-title21 .title-menu .btn [data-ico] { display: none; }
+#stage.ui-title21 .title-menu .btn:hover, #stage.ui-title21 .title-menu .btn:active { filter: none; transform: none; }
+#stage.ui-title21 .title-menu .btn:focus-visible { outline: 3px solid #fff; outline-offset: -6px; border-radius: 40px; }
+
+#stage.ui-title21 .btn-start { left: 402px; top: 458px; width: 476px; height: 124px; background-image: url("assets/title/btn_start_normal.png"); }
+#stage.ui-title21 .btn-start:hover { background-image: url("assets/title/btn_start_hover.png"); }
+#stage.ui-title21 .btn-start:active { background-image: url("assets/title/btn_start_pressed.png"); }
+#stage.ui-title21 .title-sub .btn[data-action=codex]    { left: 269px; top: 577px; width: 226px; height: 91px; background-image: url("assets/title/btn_codex_normal.png"); }
+#stage.ui-title21 .title-sub .btn[data-action=codex]:hover    { background-image: url("assets/title/btn_codex_hover.png"); }
+#stage.ui-title21 .title-sub .btn[data-action=codex]:active   { background-image: url("assets/title/btn_codex_pressed.png"); }
+#stage.ui-title21 .title-sub .btn[data-action=ranking]  { left: 527px; top: 577px; width: 226px; height: 91px; background-image: url("assets/title/btn_ranking_normal.png"); }
+#stage.ui-title21 .title-sub .btn[data-action=ranking]:hover  { background-image: url("assets/title/btn_ranking_hover.png"); }
+#stage.ui-title21 .title-sub .btn[data-action=ranking]:active { background-image: url("assets/title/btn_ranking_pressed.png"); }
+#stage.ui-title21 .title-sub .btn[data-action=settings] { left: 785px; top: 577px; width: 226px; height: 91px; background-image: url("assets/title/btn_settings_normal.png"); }
+#stage.ui-title21 .title-sub .btn[data-action=settings]:hover { background-image: url("assets/title/btn_settings_hover.png"); }
+#stage.ui-title21 .title-sub .btn[data-action=settings]:active { background-image: url("assets/title/btn_settings_pressed.png"); }
+
+/* BEST 판 (260×76 → 화면 130×38, x1110 y20). 글자·숫자는 HTML */
+#stage.ui-title21 .title-best {
+  left: 1110px; right: auto; top: 20px; width: 130px; height: 38px; padding: 0 6px; justify-content: center; gap: 3px; font-size: 15px; white-space: nowrap;   /* 7자리(1,234,567)까지 판 안에 */
+  background: url("assets/title/ui_title_best.png") center / 100% 100% no-repeat; border: none; box-shadow: none; border-radius: 0;
+}
+
+</style>
+  <style>
+/* =========================================================
+ * 도감 UI 아트 v2.5~2.6 — 스테이지에 .ui-codex25 가 붙었을 때만 (assets/codex/ 파일이 모두 있을 때)
+ *  - 받은 PNG 그대로, DEVELOPER_HANDOFF_KO.md 좌표(1280×720)에 배치. 원본은 약 2배라 화면 크기로 줄여 그림
+ *  - 배경판(codex_backplate)에 제목·토끼·창이 그려져 있어 게임의 창·제목은 숨김
+ *  - 가구 그림·이름·설명·수량·잠금은 기존 게임 데이터 그대로 (renderCodex)
+ * ========================================================= */
+#stage.ui-codex25 #screen-codex .codex-panel {
+  left: 0; top: 0; width: 1280px; height: 720px; transform: none; padding: 0;
+  background: none; border: none; border-radius: 0; box-shadow: none;
+}
+#stage.ui-codex25 #screen-codex .panel-head { display: block; left: 0; top: 0; right: auto; width: 1280px; height: 720px; }   /* 제목 pill 은 숨기고 개수 판만 */
+#stage.ui-codex25 #screen-codex .head-pill { display: none; }
+/* v2.6 수집 개수 판 (240×72 → 120×36, 추천 좌표 993,111). 글자는 게임 (n / 11) */
+#stage.ui-codex25 #screen-codex .panel-meta {
+  display: block; position: absolute; left: 993px; top: 111px; right: auto; width: 120px; height: 36px;
+  line-height: 36px; text-align: center; font-size: 18px; color: var(--purple); white-space: nowrap;
+  background: url("assets/codex/codex_count_plate.png") center / 100% 100% no-repeat;
+}
+
+/* 닫기 (1133, 55, 62×62) */
+#stage.ui-codex25 #screen-codex .btn-close {
+  left: 1133px; top: 55px; right: auto; width: 62px; height: 62px;
+  background: url("assets/codex/codex_close_normal.png") center / 100% 100% no-repeat; border: none; box-shadow: none; border-radius: 50%;
+}
+#stage.ui-codex25 #screen-codex .btn-close [data-ico] { display: none; }
+#stage.ui-codex25 #screen-codex .btn-close:hover { transform: none; background-image: url("assets/codex/codex_close_hover.png"); }
+#stage.ui-codex25 #screen-codex .btn-close:active { transform: none; background-image: url("assets/codex/codex_close_pressed.png"); }   /* v2.6: 눌림 이동은 그림에 포함 */
+
+/* 카드 11개: 4열, 시작 (125,166), 142×141, 간격 153 / 152 */
+#stage.ui-codex25 .codex-grid {
+  position: absolute; left: 125px; top: 166px; margin: 0;
+  display: grid; grid-template-columns: repeat(4, 142px); grid-auto-rows: 141px; column-gap: 11px; row-gap: 11px;
+}
+#stage.ui-codex25 .codex-cell {
+  width: 142px; height: 141px; padding: 0 0 10px; gap: 0; justify-content: flex-end;
+  background: url("assets/codex/codex_cell_normal.png") center / 100% 100% no-repeat; border: none; border-radius: 0; box-shadow: none;
+}
+#stage.ui-codex25 .codex-cell.selected { background-image: url("assets/codex/codex_cell_selected.png"); box-shadow: none; }
+#stage.ui-codex25 .codex-cell.locked { background-image: url("assets/codex/codex_cell_locked.png"); }
+#stage.ui-codex25 .codex-cell.locked.selected { background-image: url("assets/codex/codex_cell_selected.png"); }
+#stage.ui-codex25 .codex-cell:hover { transform: none; filter: brightness(1.03); }
+/* v2.7 선택 상태 그림 (.ui-codex27 일 때만). 우선순위: 잠김+선택 > 선택 > hover(발견·비선택만) > 기본 */
+#stage.ui-codex25.ui-codex27 .codex-cell:hover { filter: none; }
+#stage.ui-codex25.ui-codex27 .codex-cell:not(.locked):not(.selected):hover { background-image: url("assets/codex/codex_cell_hover.png"); }
+#stage.ui-codex25.ui-codex27 .codex-cell.locked.selected { background-image: url("assets/codex/codex_cell_locked_selected.png"); }
+#stage.ui-codex25 .codex-cell canvas, #stage.ui-codex25 .codex-cell .codex-sil { margin-bottom: 4px; }
+#stage.ui-codex25 .codex-cell .codex-sil { width: 80px; height: 80px; opacity: 0.85; }
+/* 번호 배지: 칸 왼쪽 위 (x+8, y+7) 26×26, 숫자는 글자 */
+#stage.ui-codex25 .codex-cell .num {
+  left: 8px; top: 7px; transform: none; width: 26px; height: 26px; border: none; border-radius: 0;
+  background: url("assets/codex/codex_badge_normal.png") center / 100% 100% no-repeat; color: #fff; font-size: 14px; line-height: 26px;
+}
+#stage.ui-codex25 .codex-cell.selected .num { background-image: url("assets/codex/codex_badge_selected.png"); }
+#stage.ui-codex25 .codex-cell .name { font-size: 15px; color: var(--ink); }
+#stage.ui-codex25 .codex-cell.locked .name { color: #a99fcf; }
+
+/* 상세: 이름(위) · 가구 받침 (786,216,343×245) · 설명 패널 (786,469,341×126) */
+#stage.ui-codex25 .codex-detail {
+  position: absolute; left: 786px; top: 180px; width: 343px; height: 420px; margin: 0; padding: 0;
+  display: block; background: none; border: none; border-radius: 0; box-shadow: none;
+}
+#stage.ui-codex25 .codex-detail .d-img {
+  position: absolute; left: 0; top: 36px; width: 343px; height: 245px; border-radius: 0;
+  background: url("assets/codex/codex_item_stage.png") center / 100% 100% no-repeat;
+}
+#stage.ui-codex25 .codex-detail .d-img .codex-sil { width: 160px; height: 160px; opacity: 0.85; }
+#stage.ui-codex25 .codex-detail > div:last-child {
+  position: absolute; left: 0; top: 289px; width: 341px; height: 126px; padding: 12px 16px;
+  background: url("assets/codex/codex_description_panel.png") center / 100% 100% no-repeat;
+}
+#stage.ui-codex25 .codex-detail .d-name { position: absolute; left: 12px; top: -289px; height: 32px; line-height: 32px; font-size: 26px; white-space: nowrap; }
+#stage.ui-codex25 .codex-detail .d-size { position: absolute; right: 14px; top: -285px; font-size: 15px; }
+#stage.ui-codex25 .codex-detail .d-desc { margin: 0; font-size: 14px; line-height: 1.4; max-width: none; }
+#stage.ui-codex25 .codex-detail .d-meta { margin-top: 5px; gap: 4px 6px; flex-wrap: wrap; }
+#stage.ui-codex25 .codex-detail .chip { font-size: 12px; padding: 0 9px; height: 21px; line-height: 21px; white-space: nowrap; }
+
+</style>
+  <style>
+/* =========================================================
+ * 랭킹 UI 아트 v2.9 — 스테이지에 .ui-rank29 가 붙었을 때만 (assets/ranking/ 파일 12개가 모두 있을 때)
+ *  - 받은 PNG 그대로, LAYOUT_1280x720.json 좌표에 크기·위치만 지정
+ *  - ranking_backplate.png 한 장에 배경·토끼 구름·왕관·'랭킹' 제목·닫기 그림이 모두 있음
+ *    → 게임 쪽 제목·닫기 그림·토끼·배경 오버레이는 그리지 않음. 닫기는 투명 클릭 영역만
+ *  - 순위(4위~)·닉네임·점수·날짜·탭 글자는 게임 데이터. 1~3위 메달은 숫자가 그림에 들어 있음
+ *  - 열 가운데 x (1280 기준): 순위 347 · 닉네임 518 · 점수 779 · 날짜 965 (행 왼쪽 221 기준 126 · 297 · 558 · 744)
+ *  - 행의 '최고 진화 가구' 작은 그림은 의뢰자 결정으로 유지 (순위와 닉네임 사이)
+ * ========================================================= */
+#stage.ui-rank29 #screen-ranking .deco-ranking { display: none !important; }
+#stage.ui-rank29 .ranking-panel {
+  left: 0; top: 0; width: 1280px; height: 720px; transform: none; padding: 0; display: block;
+  background: none; border: none; border-radius: 0; box-shadow: none;
+}
+#stage.ui-rank29 #screen-ranking .panel-head { display: none; }   /* 제목은 배경판 그림에 있음 */
+
+/* 닫기: 배경판의 X 그림 위 투명 클릭 영역 (1014,64) 78×78 */
+#stage.ui-rank29 #screen-ranking .btn-close {
+  left: 1014px; top: 64px; right: auto; width: 78px; height: 78px; padding: 0; overflow: visible;
+  background: none; border: none; border-radius: 50%; box-shadow: none; transform: none;
+}
+#stage.ui-rank29 #screen-ranking .btn-close [data-ico] { display: none; }
+#stage.ui-rank29 #screen-ranking .btn-close:hover, #stage.ui-rank29 #screen-ranking .btn-close:active { transform: none; background: none; box-shadow: none; }
+#stage.ui-rank29 #screen-ranking .btn-close:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.85); outline-offset: -6px; }
+
+/* 탭: 전체 (332,143) · 내 (643,143) 306×48 */
+#stage.ui-rank29 .rank-tabs { position: absolute; left: 332px; top: 143px; width: 617px; height: 48px; margin: 0; display: flex; gap: 5px; }
+#stage.ui-rank29 .rank-tab {
+  flex: none; width: 306px; height: 48px; padding: 0 0 2px; gap: 0; border: none; border-radius: 0; box-shadow: none;
+  font-size: 19px; color: var(--purple); background: url("assets/ranking/ranking_tab_off.png") center / 100% 100% no-repeat;
+}
+#stage.ui-rank29 .rank-tab.active { color: #fff; box-shadow: none; background-image: url("assets/ranking/ranking_tab_on.png"); }
+#stage.ui-rank29 .rank-tab:hover, #stage.ui-rank29 .rank-tab:active { transform: none; }
+#stage.ui-rank29 .rank-tab [data-ico] { display: none; }
+
+/* 표 머리 (221,195) 838×35 · 행 (221,233) 838×38, 37px 간격 · 내 순위 (221,606) 838×44 */
+#stage.ui-rank29 .rank-colhead {
+  position: absolute; left: 221px; top: 195px; width: 838px; height: 35px; display: block; padding: 0;
+  font-size: 16px; line-height: 35px; color: var(--purple);
+  background: url("assets/ranking/ranking_table_header.png") center / 100% 100% no-repeat;
+}
+#stage.ui-rank29 .ranking-list {
+  position: absolute; left: 221px; top: 233px; width: 838px; height: 371px; display: block; overflow: hidden auto; padding: 0; margin: 0;
+}
+#stage.ui-rank29 .ranking-list li, #stage.ui-rank29 .my-rank {
+  position: relative; display: block; width: 838px; height: 38px; min-height: 0; padding: 0; gap: 0;
+  border: none; border-radius: 0; box-shadow: none; line-height: 38px; color: var(--purple);
+  background: url("assets/ranking/ranking_row_normal.png") center / 100% 100% no-repeat;
+}
+#stage.ui-rank29 .ranking-list li { margin: 0 0 -1px; }
+#stage.ui-rank29 .ranking-list li.r1 { background-image: url("assets/ranking/ranking_row_1.png"); }
+#stage.ui-rank29 .ranking-list li.r2 { background-image: url("assets/ranking/ranking_row_2.png"); }
+#stage.ui-rank29 .ranking-list li.r3 { background-image: url("assets/ranking/ranking_row_3.png"); }
+#stage.ui-rank29 .ranking-list li.latest { box-shadow: none; }               /* v2.9 에 '방금 등록' 행 그림 없음 → 닉네임 색만 */
+#stage.ui-rank29 .ranking-list li.latest .name { color: var(--gold-ink); }
+
+/* 칸: 가운데 x 기준 절대 위치 */
+#stage.ui-rank29 .rank-colhead span, #stage.ui-rank29 .ranking-list li > *, #stage.ui-rank29 .my-rank > * {
+  position: absolute; top: 0; height: 100%; transform: translateX(-50%); text-align: center; white-space: nowrap; margin: 0;
+}
+#stage.ui-rank29 .rank-colhead span:nth-child(1) { left: 126px; }
+#stage.ui-rank29 .rank-colhead span:nth-child(2) { left: 297px; }
+#stage.ui-rank29 .rank-colhead span:nth-child(3) { left: 558px; }
+#stage.ui-rank29 .rank-colhead span:nth-child(4) { left: 744px; }
+
+#stage.ui-rank29 .ranking-list .rank-badge {
+  left: 126px; top: 50%; height: auto; width: auto; transform: translate(-50%, -50%); display: block; line-height: 1;
+  font-size: 18px; color: var(--purple); background: none; border: none; border-radius: 0; box-shadow: none;
+}
+/* 1~3위 메달 (84×84 → v3.1 권장 44×44, 숫자는 그림에 포함) */
+#stage.ui-rank29 .ranking-list .rank-badge.r1, #stage.ui-rank29 .ranking-list .rank-badge.r2, #stage.ui-rank29 .ranking-list .rank-badge.r3 {
+  width: 44px; height: 44px; font-size: 0; color: transparent; background: center / 100% 100% no-repeat;
+}
+#stage.ui-rank29 .ranking-list .rank-badge.r1 { background-image: url("assets/ranking/ranking_medal_1.png"); }
+#stage.ui-rank29 .ranking-list .rank-badge.r2 { background-image: url("assets/ranking/ranking_medal_2.png"); }
+#stage.ui-rank29 .ranking-list .rank-badge.r3 { background-image: url("assets/ranking/ranking_medal_3.png"); }
+#stage.ui-rank29 .rank-avatar {
+  left: 186px; top: 50%; width: 28px; height: 28px; transform: translate(-50%, -50%); display: block; background: none; border-radius: 0;
+}
+#stage.ui-rank29 .rank-avatar canvas { display: block; width: 28px !important; height: 28px !important; }
+#stage.ui-rank29 .ranking-list .name { left: 297px; width: 190px; overflow: hidden; text-overflow: ellipsis; font-size: 18px; }
+#stage.ui-rank29 .ranking-list .score, #stage.ui-rank29 .my-rank .score {
+  left: 558px; display: flex; align-items: center; justify-content: center; font-size: 19px; max-width: 170px; color: var(--purple);
+}
+#stage.ui-rank29 .ranking-list .date, #stage.ui-rank29 .my-rank .date { left: 744px; font-size: 13px; color: #8f7fc9; }
+#stage.ui-rank29 .ranking-empty { position: static; padding-top: 140px; text-align: center; line-height: 1.5; }
+
+/* 내 순위 줄 (사용자 기록이 있을 때만) */
+#stage.ui-rank29 .my-rank {
+  position: absolute; left: 221px; top: 606px; height: 44px; line-height: 44px; margin: 0;
+  background-image: url("assets/ranking/ranking_row_mine.png");
+}
+#stage.ui-rank29 .my-rank:not(.show) { display: none; }
+#stage.ui-rank29 .my-rank .my-label { left: 45px; width: auto; padding: 0; font-size: 16px; color: var(--purple); background: none; border-radius: 0; }
+#stage.ui-rank29 .my-rank .my-pos { left: 158px; font-size: 18px; color: var(--purple); }
+#stage.ui-rank29 .my-rank .name { left: 324px; width: 190px; overflow: hidden; text-overflow: ellipsis; font-size: 18px; color: var(--purple); }
+#stage.ui-rank29 .my-rank .hint { left: 470px; width: 560px; font-size: 15px; color: var(--purple); }
+
+/* ---------- v3.1 보완 (.ui-rank30 일 때만) ----------
+ * 닫기 hover/pressed: 받은 78×78 그림을 클릭 영역 (1014,64) 78×78 에 그대로 겹침 (v3.0 의 104×104 확대는 제거)
+ * 방금 등록 행: 4위부터 ranking_row_latest, 1~3위는 금·은·동 행 위에 ranking_row_latest_overlay 만 겹침 */
+#stage.ui-rank29.ui-rank30 #screen-ranking .btn-close::before {
+  content: ""; position: absolute; left: 0; top: 0; width: 78px; height: 78px; pointer-events: none;
+  background: center / 100% 100% no-repeat; display: none;
+}
+#stage.ui-rank29.ui-rank30 #screen-ranking .btn-close:hover::before { display: block; background-image: url("assets/ranking/ranking_close_hover.png"); }
+#stage.ui-rank29.ui-rank30 #screen-ranking .btn-close:active::before { display: block; background-image: url("assets/ranking/ranking_close_pressed.png"); }
+#stage.ui-rank29.ui-rank30 .ranking-list li.latest { background-image: url("assets/ranking/ranking_row_latest.png"); }
+#stage.ui-rank29.ui-rank30 .ranking-list li.latest.r1 { background-image: url("assets/ranking/ranking_row_latest_overlay.png"), url("assets/ranking/ranking_row_1.png"); }
+#stage.ui-rank29.ui-rank30 .ranking-list li.latest.r2 { background-image: url("assets/ranking/ranking_row_latest_overlay.png"), url("assets/ranking/ranking_row_2.png"); }
+#stage.ui-rank29.ui-rank30 .ranking-list li.latest.r3 { background-image: url("assets/ranking/ranking_row_latest_overlay.png"), url("assets/ranking/ranking_row_3.png"); }
+
+</style>
+  <style>
+/* =========================================================
+ * 옵션 UI 아트 v3.2 — 스테이지에 .ui-opt32 가 붙었을 때만 (assets/options/ 파일이 모두 있을 때)
+ *  - options_backplate_1280x720.png 한 장에 배경·토끼·'옵션' 제목·항목 이름·아이콘·닫기 그림이 모두 있음
+ *    → 게임 쪽 제목·항목 글자·아이콘·토끼 장식·배경 오버레이는 그리지 않음
+ *  - 조작부 PNG 는 받은 그대로, LAYOUT.json native 좌표를 화면으로 변환 (x = 160 + x·0.663, y = y·0.663)
+ *      배경음악 트랙 (604,227) 308×37 · 효과음 트랙 (604,324) 308×37
+ *      가이드선 토글 (798,420) 103×44 · 기록 초기화 (733,499) 179×63 · 닫기 클릭 영역 (922,96) 113×93
+ *  - 손잡이 크기는 아트 합성 미리보기 기준 36×36 (보이는 별 원 약 28px)
+ *  - 기능(볼륨·가이드선·초기화 확인 창)은 기존 그대로
+ * ========================================================= */
+#stage.ui-opt32 #screen-settings .deco-settings { display: none !important; }
+#stage.ui-opt32 #screen-settings .panel {
+  left: 0; top: 0; width: 1280px; height: 720px; transform: none; padding: 0;
+  background: none; border: none; border-radius: 0; box-shadow: none;
+}
+#stage.ui-opt32 #screen-settings .panel-head { display: none; }
+#stage.ui-opt32 #screen-settings .settings-list { display: block; }
+#stage.ui-opt32 #screen-settings .setting-row { display: contents; }
+#stage.ui-opt32 #screen-settings .setting-row > [data-ico], #stage.ui-opt32 #screen-settings .setting-row .s-label { display: none; }
+
+/* 슬라이더: 트랙 그림 + 별 손잡이 */
+#stage.ui-opt32 #screen-settings input[type=range] {
+  -webkit-appearance: none; appearance: none; position: absolute; left: 604px; width: 308px; height: 37px; margin: 0; padding: 0 4px;
+  background: url("assets/options/slider_track.png") center / 100% 100% no-repeat; cursor: pointer; box-sizing: border-box;
+}
+#stage.ui-opt32 #screen-settings #set-bgm { top: 227px; }
+#stage.ui-opt32 #screen-settings #set-sfx { top: 324px; }
+#stage.ui-opt32 #screen-settings input[type=range]::-webkit-slider-runnable-track { height: 37px; background: transparent; border: none; }
+#stage.ui-opt32 #screen-settings input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 36px; height: 36px; margin-top: 0.5px; border: none; background: url("assets/options/slider_knob.png") center / 100% 100% no-repeat;
+}
+#stage.ui-opt32 #screen-settings input[type=range]::-moz-range-track { height: 37px; background: transparent; border: none; }
+#stage.ui-opt32 #screen-settings input[type=range]::-moz-range-thumb { width: 36px; height: 36px; border: none; border-radius: 0; background: url("assets/options/slider_knob.png") center / 100% 100% no-repeat; }
+#stage.ui-opt32 #screen-settings input[type=range]:focus-visible { outline: 2px solid var(--purple-2); outline-offset: 2px; border-radius: 20px; }
+
+/* 드롭 가이드선 토글 */
+#stage.ui-opt32 #screen-settings .toggle { position: absolute; left: 798px; top: 420px; width: 103px; height: 44px; }
+#stage.ui-opt32 #screen-settings .toggle-ui { border-radius: 0; background: url("assets/options/toggle_off.png") center / 100% 100% no-repeat; transition: none; }
+#stage.ui-opt32 #screen-settings .toggle input:checked + .toggle-ui { background: url("assets/options/toggle_on.png") center / 100% 100% no-repeat; }
+#stage.ui-opt32 #screen-settings .toggle-ui::before, #stage.ui-opt32 #screen-settings .toggle-ui::after { display: none; }   /* ON/OFF 글자·손잡이는 그림에 있음 */
+
+/* 기록 초기화 (글자는 그림에 있음). 누르면 기존 확인 창
+ *  위치: 문서 좌표 (733,499) 는 버튼이 행 위쪽으로 붙고 위 토글보다 27px 왼쪽이라,
+ *        행 세로 가운데(538)·토글 가로 가운데(850)에 맞춰 (760,506) 으로 옮김
+ *  그림: v3.3 reset_* 는 '초기화' 위에 흐린 글자 자국이 겹쳐 있어 v3.2 그림으로 되돌림 (아트 재요청) */
+#stage.ui-opt32 #screen-settings .btn-sm {
+  position: absolute; left: 760px; top: 506px; width: 179px; height: 63px; padding: 0; font-size: 0; color: transparent;
+  border: none; border-radius: 0; box-shadow: none; transform: none;
+  background: url("assets/options/reset_normal.png") center / 100% 100% no-repeat;
+}
+#stage.ui-opt32 #screen-settings .btn-sm:hover { transform: none; background-image: url("assets/options/reset_hover.png"); }
+#stage.ui-opt32 #screen-settings .btn-sm:active { transform: none; background-image: url("assets/options/reset_pressed.png"); }
+
+/* 닫기: 배경판의 X 위 투명 클릭 영역 */
+#stage.ui-opt32 #screen-settings .btn-close {
+  left: 922px; top: 96px; right: auto; width: 113px; height: 93px; padding: 0; overflow: visible;
+  background: none; border: none; border-radius: 0; box-shadow: none; transform: none;
+}
+#stage.ui-opt32 #screen-settings .btn-close [data-ico] { display: none; }
+#stage.ui-opt32 #screen-settings .btn-close:hover, #stage.ui-opt32 #screen-settings .btn-close:active { transform: none; background: none; box-shadow: none; }
+#stage.ui-opt32 #screen-settings .btn-close:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.85); outline-offset: -8px; }
+
+/* 닫기 hover/pressed (v3.3, .ui-opt32close 일 때만)
+ *  140×140 그림이 화면 1:1 크기로 만들어져 있음 (X 표시 크기가 배경판과 같음) → 축소 없이 (922,76) 에 겹침
+ *  = 클릭 영역 (922,96) 기준 (0,-20). 배경판 X 중심 (991,149) 과 그림 속 X 중심이 일치 */
+#stage.ui-opt32.ui-opt32close #screen-settings .btn-close::before {
+  content: ""; position: absolute; left: 0; top: -20px; width: 140px; height: 140px; pointer-events: none;
+  background: center / 100% 100% no-repeat; display: none;
+}
+#stage.ui-opt32.ui-opt32close #screen-settings .btn-close:hover::before { display: block; background-image: url("assets/options/close_hover.png"); }
+#stage.ui-opt32.ui-opt32close #screen-settings .btn-close:active::before { display: block; background-image: url("assets/options/close_pressed.png"); }
+
+</style>
+  <style>
+/* =========================================================
+ * 확인 창 (기록 초기화) v3.4 — 스테이지에 .ui-confirm34 가 붙었을 때만 (assets/confirm/ 3장이 모두 있을 때)
+ *  - 받은 PNG 그대로, 크기·위치만 지정. 배치는 의뢰자 시안(1399×1124)과 패널 PNG(같은 1399×1124)를 0.4003 배로 줄인 값
+ *  - 창 560×450 (화면 가운데). 제목·본문·버튼 글자는 게임 글자
+ *  - 버튼 PNG(2172×724)는 바깥 빛을 포함 → 버튼 몸통(클릭 영역)에 맞추고 빛 부분은 ::before 로 바깥까지 그림
+ *      지우기(노랑): 몸통 (71,255) 417×61, 그림 (50,209) 460×153 — 몸통 폭을 시안 버튼 폭에 맞춘 배율
+ *      취소(보라)  : 몸통 (71,326) 418×66, 그림 (46,281) 469×156
+ *  - 상태 그림이 없어서 마우스 올림은 살짝 확대, 누름은 2px 내려감 (위치·크기만)
+ * ========================================================= */
+#stage.ui-confirm34 .confirm-card {
+  width: 560px; height: 450px; padding: 0; border: none; border-radius: 0; box-shadow: none;
+  background: url("assets/confirm/confirm_panel.png") center / 100% 100% no-repeat;
+}
+#stage.ui-confirm34 .confirm-card .card-title {
+  left: 108px; top: 34px; width: 344px; height: 76px; transform: none; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; color: #4b2f9e; background: none; border: none; border-radius: 0; box-shadow: none;
+}
+#stage.ui-confirm34 .confirm-text {
+  position: absolute; left: 60px; top: 132px; width: 440px; height: 112px; margin: 0; min-height: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 21px; line-height: 1.65; color: #4b2f9e;
+}
+#stage.ui-confirm34 .confirm-buttons { display: block; position: static; }
+#stage.ui-confirm34 .confirm-buttons .btn {
+  position: absolute; left: 71px; padding: 0; border: none; border-radius: 30px; box-shadow: none;
+  background: none; font-size: 24px; transform: none; transition: transform 0.08s;
+}
+#stage.ui-confirm34 .confirm-buttons .btn::before {
+  content: ""; position: absolute; z-index: -1; pointer-events: none; background: center / 100% 100% no-repeat;
+}
+#stage.ui-confirm34 #confirm-yes { top: 255px; width: 417px; height: 61px; color: #6b3d12; z-index: 1; }
+#stage.ui-confirm34 #confirm-yes::before { left: -21px; top: -46px; width: 460px; height: 153px; background-image: url("assets/confirm/confirm_btn_yes.png"); }
+#stage.ui-confirm34 #confirm-no { top: 326px; width: 418px; height: 66px; color: #5a3fa8; }
+#stage.ui-confirm34 #confirm-no::before { left: -25px; top: -45px; width: 469px; height: 156px; background-image: url("assets/confirm/confirm_btn_no.png"); }
+#stage.ui-confirm34 .confirm-buttons .btn:hover { transform: scale(1.02); background: none; }
+#stage.ui-confirm34 .confirm-buttons .btn:active { transform: translateY(2px); background: none; }
+#stage.ui-confirm34 .confirm-buttons .btn:focus-visible { outline: 3px solid rgba(124, 92, 230, 0.6); outline-offset: 2px; }
+
+</style>
+  <style>
+/* =========================================================
+ * 일시정지 창 v3.6 — 스테이지에 .ui-pause36 이 붙었을 때만 (assets/pause/ 11장이 모두 있을 때)
+ *  - 의뢰자 시안(607×641)을 0.9 배로: 창 546×577, 화면 가운데
+ *  - 제목·버튼 글자는 게임 글자, 아이콘·패널·버튼은 PNG (받은 그대로 크기·위치만)
+ *  - 버튼 (창 안): x 92, 374×65, y 183 / 264 / 345 / 427 (시안 90px 간격 × 0.9)
+ *  - 시안대로 아이콘은 같은 세로줄(버튼 왼쪽 + 133 중심, 30×30), 글자는 버튼 왼쪽 + 210 중심
+ *  - 기능(계속·다시·옵션·타이틀로)은 그대로
+ * ========================================================= */
+.pz-ico { display: none; }   /* 기본(옛 창)에서는 아이콘 자리 없음 */
+
+#stage.ui-pause36 #overlay-pause .pause-card {
+  width: 546px; height: 577px; padding: 0; border: none; border-radius: 0; box-shadow: none;
+  background: url("assets/pause/pause_panel.png") center / 100% 100% no-repeat;
+}
+#stage.ui-pause36 #overlay-pause .card-title {
+  left: 166px; top: 85px; width: 266px; height: 59px; transform: none; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; color: #5941bb; background: none; border: none; border-radius: 0; box-shadow: none;
+}
+#stage.ui-pause36 #overlay-pause .card-body { display: block; }
+#stage.ui-pause36 #overlay-pause .card-body .btn {
+  position: absolute; left: 92px; width: 374px; height: 65px; padding: 0 0 3px; margin: 0;
+  display: block;
+  border: none; border-radius: 33px; box-shadow: none; font-size: 24px; color: #4b2f9e;
+  background: url("assets/pause/pause_btn_sub_normal.png") center / 100% 100% no-repeat; transform: none;
+}
+#stage.ui-pause36 #overlay-pause .card-body .btn:hover { transform: none; background-image: url("assets/pause/pause_btn_sub_hover.png"); }
+#stage.ui-pause36 #overlay-pause .card-body .btn:active { transform: none; background-image: url("assets/pause/pause_btn_sub_pressed.png"); }
+#stage.ui-pause36 #overlay-pause .card-body .btn-primary { color: #fff; background-image: url("assets/pause/pause_btn_main_normal.png"); }
+#stage.ui-pause36 #overlay-pause .card-body .btn-primary:hover { background-image: url("assets/pause/pause_btn_main_hover.png"); }
+#stage.ui-pause36 #overlay-pause .card-body .btn-primary:active { background-image: url("assets/pause/pause_btn_main_pressed.png"); }
+#stage.ui-pause36 #overlay-pause .btn[data-action=resume]   { top: 183px; }
+#stage.ui-pause36 #overlay-pause .btn[data-action=retry]    { top: 264px; }
+#stage.ui-pause36 #overlay-pause .btn[data-action=settings] { top: 345px; }
+#stage.ui-pause36 #overlay-pause .btn[data-action=home]     { top: 427px; }
+#stage.ui-pause36 #overlay-pause .btn:focus-visible { outline: 3px solid rgba(124, 92, 230, 0.6); outline-offset: 2px; }
+#stage.ui-pause36 #overlay-pause .pz-ico { display: block; position: absolute; left: 118px; top: 16px; width: 30px; height: 30px; background: center / 100% 100% no-repeat; }
+#stage.ui-pause36 #overlay-pause .pz-resume   { background-image: url("assets/pause/pause_icon_resume.png"); }
+#stage.ui-pause36 #overlay-pause .pz-retry    { background-image: url("assets/pause/pause_icon_retry.png"); }
+#stage.ui-pause36 #overlay-pause .pz-settings { background-image: url("assets/pause/pause_icon_settings.png"); }
+#stage.ui-pause36 #overlay-pause .pz-home     { background-image: url("assets/pause/pause_icon_home.png"); }
+#stage.ui-pause36 #overlay-pause .pz-label { position: absolute; left: 210px; top: 0; height: 62px; line-height: 62px; transform: translateX(-50%); white-space: nowrap; }
+
+</style>
+  <style>
+/* =========================================================
+ * 플레이 화면 v3.8 — 스테이지에 .ui-play38 이 붙었을 때만
+ *  - gameplay_full_skin_clean_2560x1440.png 한 장이 배경 (SCORE·BEST·NEXT·진화도 라벨과 판, 번호 배지, 유리 상자, 일시정지 그림 포함)
+ *    → 게임 쪽 판·라벨·번호·유리 상자·일시정지 그림은 그리지 않고, 숫자·NEXT 가구·진화도 가구만 얹음
+ *  - 좌표는 승인 시안(APPROVED_REFERENCE_1280x720)에서 잰 값
+ *      SCORE 숫자 가운데 (176,162) · BEST 숫자 왼쪽 (207,222) · NEXT 가구 가운데 (176,435)
+ *      진화도 가구 가운데 x 1128, y 173 + 43·n · 일시정지 (1220,48)
+ * ========================================================= */
+#stage.ui-play38 #screen-game .hud-left {
+  left: 0; top: 0; width: 1280px; height: 720px; display: block; gap: 0;
+}
+#stage.ui-play38 #screen-game .score-card,
+#stage.ui-play38 #screen-game .next-box,
+#stage.ui-play38 #screen-game .evo-panel {
+  position: absolute; left: 0; top: 0; width: 0; height: 0; padding: 0; margin: 0; overflow: visible;
+  background: none; border: none; border-radius: 0; box-shadow: none;
+}
+#stage.ui-play38 #screen-game .score-label,
+#stage.ui-play38 #screen-game .next-label,
+#stage.ui-play38 #screen-game .evo-title,
+#stage.ui-play38 #screen-game .best-row [data-ico],
+#stage.ui-play38 #screen-game .best-label,
+#stage.ui-play38 #screen-game .evo-num { display: none; }
+
+/* SCORE 숫자: 가운데 (176,162), 높이 약 40 */
+#stage.ui-play38 #screen-game .score-value {
+  position: absolute; left: 76px; top: 136px; width: 200px; height: 52px; margin: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 40px;
+  background: none; box-shadow: none; border-radius: 0;
+}
+/* BEST 숫자: 'BEST' 글자 오른쪽 (207,222) 부터 */
+#stage.ui-play38 #screen-game .best-row {
+  position: absolute; left: 205px; top: 208px; width: 80px; height: 28px; margin: 0; padding: 0;
+  display: flex; align-items: center; justify-content: flex-start; background: none; box-shadow: none; border-radius: 0;
+}
+#stage.ui-play38 #screen-game .best-value { font-size: 22px; max-width: 78px; }
+
+/* NEXT 가구: 가운데 (176,435) */
+#stage.ui-play38 #screen-game .next-slot {
+  position: absolute; left: 96px; top: 362px; width: 160px; height: 146px; margin: 0;
+  display: flex; align-items: center; justify-content: center; background: none; border-radius: 0;
+}
+
+/* 진화도: 가구만 (번호 배지·노란 강조는 그림) */
+#stage.ui-play38 #screen-game .evo-list {
+  position: absolute; left: 1105px; top: 151px; width: 46px; display: block; gap: 0; margin: 0; padding: 0;
+}
+#stage.ui-play38 #screen-game .evo-list li {
+  width: 46px; height: 43px; padding: 0; margin: 0; gap: 0; display: flex; align-items: center; justify-content: center;
+  background: none; box-shadow: none; border-radius: 0;
+}
+#stage.ui-play38 #screen-game .evo-list li canvas { width: 38px !important; height: 38px !important; }
+#stage.ui-play38 #screen-game .evo-list li.current, #stage.ui-play38 #screen-game .evo-list li.reached { width: 46px; background: none; box-shadow: none; }
+
+/* 일시정지: 그림 위 투명 클릭 영역 */
+#stage.ui-play38 #screen-game .btn-pause {
+  left: 1186px; top: 15px; right: auto; width: 68px; height: 66px; padding: 0;
+  background: none; border: none; box-shadow: none; border-radius: 50%; transform: none;
+}
+#stage.ui-play38 #screen-game .btn-pause [data-ico] { display: none; }
+#stage.ui-play38 #screen-game .btn-pause:hover, #stage.ui-play38 #screen-game .btn-pause:active { background: none; box-shadow: none; transform: none; }
+#stage.ui-play38 #screen-game .btn-pause:active { transform: translateY(1px); }
+#stage.ui-play38 #screen-game .btn-pause:focus-visible { outline: 3px solid rgba(255,255,255,0.85); outline-offset: -4px; }
+
+/* 새 발견 알림: NEXT 판(아래 끝 y≈522) 바로 아래로 */
+#stage.ui-play38 #screen-game .toast { left: 61px; top: 532px; }
+
+/* v3.9 진화도 현재 단계 강조 (.ui-play39): evo_row_current 260×80 를 가구 뒤에 깔기
+ *  권장 130×40 으로 놓으면 그림 속 번호 배지(x≈1046~1073)와 오른쪽 별(x≈1180~)을 가림
+ *  → 비율 그대로 104×32 로 줄여 배지와 별 사이(1074~1178)에 맞춤, 세로는 줄 가운데 */
+#stage.ui-play38.ui-play39 #screen-game .evo-list li { position: relative; }
+#stage.ui-play38.ui-play39 #screen-game .evo-list li canvas { position: relative; z-index: 1; }
+#stage.ui-play38.ui-play39 #screen-game .evo-list li.current::before {
+  content: ""; position: absolute; left: -31px; top: 5.5px; width: 104px; height: 32px; z-index: 0;
+  background: url("assets/gameplay/evo_row_current.png") center / 100% 100% no-repeat;
+}
+
+</style>
+
+<div id="viewport">
+  <div id="stage">
+
+    <!-- ============ 로딩 ============ -->
+    <section id="screen-loading" class="screen active">
+      <div class="loading-box">
+        <div class="loading-title">토몽이와 이지의 방</div>
+        <div class="loading-bar"><span id="loading-fill"></span></div>
+      </div>
+    </section>
+
+    <!-- ============ 01 타이틀 ============ -->
+    <section id="screen-title" class="screen bg-title" data-slot="bg_title.png · 1280×720">
+      <div class="title-logo" id="title-logo" data-slot="logo.png · 560×300 / v2.1: title_logo_with_bunny.png · 610×428">
+        <span class="logo-line1">토몽이와</span>
+        <span class="logo-line2">이지의 방</span>
+      </div>
+      <div class="title-menu">
+        <button class="btn btn-primary btn-xl btn-start" data-action="start" data-slot="btn_start_{normal,hover,pressed}.png · 720×184 (화면 360×92)"><i data-ico="star"></i>게임 시작</button>
+        <div class="title-sub">
+          <button class="btn btn-secondary btn-sub" data-action="codex" data-slot="btn_sub_{normal,hover,pressed}.png · 340×116 (화면 170×58)"><i data-ico="book"></i>도감</button>
+          <button class="btn btn-secondary btn-sub" data-action="ranking"><i data-ico="ranking"></i>랭킹</button>
+          <button class="btn btn-secondary btn-sub" data-action="settings"><i data-ico="settings"></i>옵션</button>
+        </div>
+      </div>
+      <img class="deco deco-title" data-art="decoTitle" alt="" data-slot="deco_rabbit_title.png · 360×330 (화면 180×165)">
+      <div class="title-best"><i data-ico="crown"></i>BEST <span id="title-best">0</span></div>
+    </section>
+
+    <!-- ============ 02 플레이 ============ -->
+    <section id="screen-game" class="screen bg-game" data-slot="bg_game.png · 1280×720">
+      <canvas id="game-canvas" width="1280" height="720"></canvas>
+
+      <!-- 좌측 HUD: SCORE + BEST / NEXT -->
+      <div class="hud-left">
+        <div class="score-card" data-slot="ui_score.png · 460×354 (화면 230×177)">
+          <div class="score-label">SCORE</div>
+          <div class="score-value num" id="hud-score" data-num="purple" data-maxw="180">0</div>
+          <div class="best-row"><i data-ico="crown"></i><span class="best-label">BEST</span><span class="best-value num" id="hud-best" data-num="gold">0</span></div>
+        </div>
+        <div class="next-box" data-slot="ui_next.png · 460×460 (화면 230×230)">
+          <div class="next-label">NEXT</div>
+          <div class="next-slot" id="hud-next"></div>
+        </div>
+      </div>
+
+      <!-- 우측 상단: 일시정지 -->
+      <button class="btn-round btn-pause" data-action="pause" aria-label="일시정지" data-slot="btn_pause_{normal,pressed}.png · 136×136 (화면 68×68)"><i data-ico="pause_light"></i></button>
+
+      <!-- 우측: 진화도 -->
+      <div class="evo-panel" data-slot="ui_evolution.png · 300×1084 (화면 150×542)">
+        <div class="evo-title">진화도</div>
+        <ul class="evo-list" id="hud-evo"></ul>
+      </div>
+
+      <!-- 새 오브젝트 발견 알림 -->
+      <div class="toast" id="toast" data-slot="panel_toast.png · 460×180 (화면 230×90)"></div>
+    </section>
+
+    <!-- ============ 일시정지 ============ -->
+    <section id="overlay-pause" class="overlay">
+      <div class="card pause-card" data-slot="panel_pause.png · 840×716 (화면 420×358)">
+        <div class="card-title">일시정지</div>
+        <div class="card-body vertical">
+          <button class="btn btn-primary" data-action="resume"><i class="pz-ico pz-resume" aria-hidden="true"></i><span class="pz-label">계속하기</span></button>
+          <button class="btn btn-secondary" data-action="retry"><i class="pz-ico pz-retry" aria-hidden="true"></i><span class="pz-label">다시하기</span></button>
+          <button class="btn btn-secondary" data-action="settings"><i class="pz-ico pz-settings" aria-hidden="true"></i><span class="pz-label">옵션</span></button>
+          <button class="btn btn-secondary" data-action="home"><i class="pz-ico pz-home" aria-hidden="true"></i><span class="pz-label">타이틀로</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 03 게임 종료 / 랭킹 등록 ============ -->
+    <section id="screen-gameover" class="screen bg-gameover" data-slot="bg_gameover.png · 1280×720">
+      <img class="deco deco-gameover" data-art="decoPanel" alt="">
+      <div class="card gameover-card" data-slot="panel_gameover.png · 1080×1002 (화면 540×501)">
+        <div class="mascot-top" id="gameover-mascot" data-slot="mascot_gameover.png · 440×300 (화면 220×150)"></div>
+        <div class="card-title big">게임 종료</div>
+        <div class="newbest-bubble" id="go-bubble">새로운<br>최고 기록이에요!</div>
+        <div class="card-body">
+          <div class="result-label">SCORE</div>
+          <div class="result-score"><span class="num" id="go-score" data-num="purple">0</span><span class="badge-new" id="go-new">NEW</span></div>
+          <div class="result-best">BEST <span id="go-best">0</span></div>
+          <div class="result-tier" id="go-tier"></div>
+          <!-- 랭킹 등록: 점수가 있으면 닉네임 입력 -->
+          <form class="rank-register" id="go-register" autocomplete="off">
+            <div class="section-pill">랭킹 등록</div>
+            <div class="rank-msg" id="go-rank-msg"></div>
+            <div class="rank-row" id="go-rank-row">
+              <label class="rank-input-wrap">
+                <input type="text" id="go-name" class="rank-input" maxlength="10" placeholder="닉네임 (최대 10자)" aria-label="닉네임">
+                <i data-ico="pencil"></i>
+              </label>
+              <button type="submit" class="btn btn-primary btn-register" id="go-submit">등록</button>
+            </div>
+          </form>
+          <div class="result-buttons">
+            <button class="btn-tile" data-action="home"><i data-ico="home"></i><span>홈으로</span></button>
+            <button class="btn-tile" data-action="retry"><i data-ico="retry"></i><span>다시하기</span></button>
+            <button class="btn-tile gold" data-action="ranking"><i data-ico="ranking_light"></i><span>랭킹</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 05 도감 ============ -->
+    <section id="screen-codex" class="screen bg-title" data-slot="bg_title.png · 1280×720">
+      <div class="panel codex-panel" data-slot="panel_codex.png · 1960×1280 (화면 980×640)">
+        <button class="btn-round btn-close" data-action="back" aria-label="닫기"><i data-ico="close"></i></button>
+        <div class="panel-head"><div class="head-pill"><i data-ico="book"></i>도감</div><span class="panel-meta" id="codex-count"></span></div>
+        <div class="codex-grid" id="codex-grid"></div>
+        <div class="codex-detail" id="codex-detail"></div>
+      </div>
+    </section>
+
+    <!-- ============ 04 옵션 ============ -->
+    <section id="screen-settings" class="screen bg-title" data-slot="bg_title.png · 1280×720">
+      <img class="deco deco-settings" data-art="decoPanel" alt="" data-slot="deco_rabbit_panel.png · 240×280 (화면 120×140)">
+      <div class="panel panel-sm" data-slot="panel_settings.png · 1120×780 (화면 560×390)">
+        <button class="btn-round btn-close" data-action="back" aria-label="닫기"><i data-ico="close"></i></button>
+        <div class="panel-head"><div class="head-pill"><i data-ico="settings"></i>옵션</div></div>
+        <div class="settings-list">
+          <label class="setting-row"><i data-ico="music"></i><span class="s-label">배경음악</span><input type="range" min="0" max="1" step="0.05" id="set-bgm"></label>
+          <label class="setting-row"><i data-ico="sfx"></i><span class="s-label">효과음</span><input type="range" min="0" max="1" step="0.05" id="set-sfx"></label>
+          <label class="setting-row"><i data-ico="guide"></i><span class="s-label">드롭 가이드선</span><span class="toggle"><input type="checkbox" id="set-guide"><span class="toggle-ui"></span></span></label>
+          <div class="setting-row"><i data-ico="trash"></i><span class="s-label">기록 초기화</span><button class="btn btn-danger btn-sm" data-action="reset-data">초기화</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 06 랭킹 ============ -->
+    <section id="screen-ranking" class="screen bg-gameover" data-slot="bg_gameover.png · 1280×720">
+      <img class="deco deco-ranking" data-art="decoPanel" alt="">
+      <div class="panel panel-sm ranking-panel" data-slot="panel_ranking.png · 1280×1200 (화면 640×600)">
+        <button class="btn-round btn-close" data-action="back" aria-label="닫기"><i data-ico="close"></i></button>
+        <div class="panel-head"><div class="head-pill"><i data-ico="ranking"></i>랭킹</div></div>
+        <div class="rank-tabs" role="tablist">
+          <button class="rank-tab active" data-tab="all" role="tab"><i data-ico="crown"></i>전체 랭킹</button>
+          <button class="rank-tab" data-tab="me" role="tab"><i data-ico="user"></i>내 랭킹</button>
+        </div>
+        <div class="rank-colhead" aria-hidden="true"><span>순위</span><span>닉네임</span><span>점수</span><span>날짜</span></div>
+        <ol class="ranking-list" id="ranking-list"></ol>
+        <div class="my-rank" id="my-rank"></div>
+      </div>
+    </section>
+
+    <!-- ============ 확인 창 (기록 초기화 등) ============ -->
+    <section id="overlay-confirm" class="overlay">
+      <div class="card confirm-card">
+        <div class="card-title" id="confirm-title">확인</div>
+        <div class="confirm-text" id="confirm-text"></div>
+        <div class="confirm-buttons">
+          <button class="btn btn-secondary" id="confirm-no">취소</button>
+          <button class="btn btn-danger" id="confirm-yes">확인</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+/* =========================================================
+ * 토몽이와 이지의 방 - 게임 설정 (밸런스/리소스 경로를 한곳에 모음)
+ * 아트 리소스는 아래 경로에 파일을 넣기만 하면 자동 교체됩니다.
+ * 파일이 없으면 임시 그림(코드로 그린 회색 도형)이 표시됩니다.
+ * v1.2~: 받은 리소스만 그대로 사용 (크기 조정·위치만, 그림 가공 없음). 필요한 그림은 아트 요청서로 요청
+ * v1.3: 아트 v1.3 UI PNG 적용 (css/skin.css). 파일이 하나라도 없으면 CSS UI 로 돌아감
+ * v1.4: 아트 v1.4 수정·추가 PNG 연결, 배경 오버레이(stars/cloud_dust) 선택 적용
+ * v1.8: 타이틀 화면 아트 v2.1 시범 적용 (assets/title/, css/skin-title.css)
+ * 이미지 자리 확인: 주소 끝에 ?slots 를 붙이거나 게임 중 F2 → 모든 이미지 자리에 파일명·크기 표시
+ * ========================================================= */
+const CONFIG = {
+  // 16:9 방송 화면 기준 논리 해상도 (창 크기에 맞춰 자동 스케일)
+  stage: { width: 1280, height: 720 },
+
+  // 유리 상자(플레이 영역) - 스테이지 좌표
+  board: {
+    left: 410, right: 870,   // 내부 폭 460
+    top: 150, bottom: 670,   // 내부 높이 520
+    wall: 40,                // 물리 벽 두께(보이지 않음)
+    dropY: 112,              // 드로퍼(다음에 떨어질 오브젝트) 높이
+    dangerY: 196,            // 게임오버 라인
+    dangerHoldMs: 2500,      // 라인 위에 이만큼 머물면 게임오버
+    spawnGraceMs: 1200,      // 막 떨어뜨린 오브젝트는 이 시간 동안 판정 제외
+
+    // glass_box.png 안의 기준선 (이미지 px). 안쪽 벽·바닥이 물리 벽·바닥과 겹치도록 게임이 확대·배치 (그림은 그대로)
+    //   v1.3: 아트 v1.3 의 glass_box.png (520×620, 안쪽 벽 x30·x490, 바닥 y600) → 1:1 로 그려짐
+    frameArt: { innerLeft: 30, innerRight: 490, innerBottom: 600 },
+    // 드로퍼 (dropper.png): 포인터를 따라다니며 다음 오브젝트를 들고 있는 그림. 없으면 오브젝트만 떠 있음
+    //   v4.2: 이지 캐릭터 + 구름 (1672×941, 의뢰자 제공 그림 그대로, 그림 영역 x223~1459 · y77~906). scale 0.116 → 보이는 부분 약 143×96
+    //   구름 아래 끝 높이(y≈98)가 이전 드로퍼와 같도록 top -7 (위쪽 투명 여백만 화면 밖)
+    //   오브젝트는 그림의 '불투명한 부분 맨 아래'에 overlap px 겹쳐 매달림
+    holder: { scale: 0.116, top: -7, overlap: 8 },
+  },
+  // 플레이 v3.8 스킨이 있을 때 board 를 이 값으로 덮어씀 (main.js). 그림 속 유리 상자에 맞춤
+  //   그림: 안쪽 벽 x≈397·882, 바닥 윗면 y≈620, 데드라인 점선 y≈188 (그림에 그려져 있음)
+  //   물리 안쪽 폭 460 은 그대로 (아트 문서 요청), 가운데 640 도 그대로 → 양옆 그림 벽과 약 12px 여유
+  //   높이 520 그대로 위로 50px 이동. 데드라인은 그림 점선에 맞춤 → 쌓을 수 있는 높이 474 → 432
+  board38: { top: 100, bottom: 620, dangerY: 188, drawFrame: false },
+
+  drop: {
+    cooldownMs: 550,         // 연속 드롭 간격
+    spawnMaxTier: 5,         // 랜덤으로 나오는 최대 단계(1~5)
+    weights: [30, 25, 20, 15, 10], // 1~5단계 등장 가중치
+  },
+
+  physics: {
+    gravityY: 1.15,
+    restitution: 0.14,   // v1.8.3: 0.12 → 0.14 (의뢰자 요청, 살짝 더 튀게)
+    friction: 0.45,
+    frictionStatic: 0.7,
+    frictionAir: 0.008,
+    density: 0.0012,
+  },
+
+  // 11단계 진화 체인
+  // radius = 크기 기준값 (스테이지 px). 실제 충돌 모양은 그림 윤곽(js/shapes.js)을 쓰고,
+  //          면적이 '반지름 radius 원 × shapes.fill' 과 같아지도록 자동 스케일됨
+  //          → 납작한 소파도 키 큰 서랍장도 단계에 맞는 '덩치'를 가짐
+  // score  = 해당 단계가 '만들어질 때' 얻는 점수
+  // sizeScale (선택) = 특정 단계만 크기를 미세 조정할 때 곱하는 값
+  //   v0.3.4: 초반에 상자가 휑해 보여 1~5단계만 키움 (1단계 +15% → 5단계 +10%, 6단계부터 그대로)
+  tiers: [
+    { id: 1,  key: 'cloud_piece',   name: '구름 조각',    radius: 17,  score: 1,  color: '#f4f2ff', accent: '#ffc4d6', sizeScale: 1.15, desc: '작고 말랑한 구름 한 조각. 모든 가구가 여기서 시작돼요.' },
+    { id: 2,  key: 'cloud_cushion', name: '구름 쿠션',    radius: 23,  score: 3,  color: '#fff0f4', accent: '#ff9fb8', sizeScale: 1.14, desc: '폭신폭신 구름 쿠션. 토몽이가 제일 좋아해요.' },
+    { id: 3,  key: 'cloud_mug',     name: '구름 머그컵',  radius: 30,  score: 6,  color: '#fff8ef', accent: '#c99a6b', sizeScale: 1.13, desc: '따뜻한 코코아가 담긴 구름 머그컵이에요.' },
+    { id: 4,  key: 'cloud_pot',     name: '구름 화분',    radius: 37,  score: 10, color: '#f3fff2', accent: '#5fbf5a', sizeScale: 1.12, desc: '구름 화분에서 새싹이 쏙! 매일 조금씩 자라요.' },
+    { id: 5,  key: 'cloud_lamp',    name: '구름 스탠드',  radius: 45,  score: 15, color: '#fff7d6', accent: '#ffcf4a', sizeScale: 1.10, desc: '은은한 빛으로 방을 밝혀 주는 구름 스탠드예요.' },
+    { id: 6,  key: 'cloud_clock',   name: '구름 탁상시계', radius: 54, score: 21, color: '#fff1e6', accent: '#f0a37a', desc: '아침마다 띠링띠링, 늦잠을 깨워 주는 탁상시계예요.' },
+    { id: 7,  key: 'cloud_stool',   name: '구름 스툴',    radius: 61,  score: 28, color: '#fbf6f0', accent: '#b8844f', desc: '잠깐 앉아 쉬기 좋은 동글동글 구름 스툴이에요.' },
+    { id: 8,  key: 'cloud_drawer',  name: '구름 서랍장',  radius: 72,  score: 36, color: '#fff6ea', accent: '#d9a25c', desc: '소중한 물건을 차곡차곡 넣어 두는 서랍장이에요.' },
+    { id: 9,  key: 'cloud_armchair',name: '구름 안락의자', radius: 85, score: 45, color: '#fbf8ff', accent: '#ffd65c', desc: '푹 파묻히면 잠이 솔솔 오는 안락의자예요.' },
+    { id: 10, key: 'cloud_sofa',    name: '구름 소파',    radius: 99,  score: 55, color: '#fdf7ff', accent: '#8fb3ff', desc: '별 쿠션이 놓인 넓은 소파. 다 같이 앉아도 넉넉해요.' },
+    { id: 11, key: 'cloud_bed',     name: '구름 침대',    radius: 116, score: 66, color: '#f6f8ff', accent: '#5b7fe0', desc: '폭신한 구름으로 만들어진 이지의 특별한 침대예요. 달콤한 꿈이 가득한 최고의 가구예요.' },
+  ],
+  shapes: {
+    mode: 'outline',   // 'outline' = 그림 윤곽 다각형 / 'circle' = 원형 (원작 수박게임 방식)
+    fill: 0.82,        // 윤곽 면적 = 원 면적 × fill
+    gameScale: 1.12,   // v4.3: 게임 안 오브젝트 11종 크기 일괄 배율 (그림·충돌 모두). NEXT·도감·진화도 썸네일은 그대로
+  },
+
+  // 11단계 두 개가 합쳐지면: 둘 다 사라지고 보너스
+  maxMergeBonus: 100,
+
+  // ---- 리소스 경로 (ASSET_SPEC.md 참고) ----
+  assets: {
+    object: (t) => `assets/objects/obj_${String(t.id).padStart(2, '0')}_${t.key}.png`,
+    bg: {
+      title:    'assets/bg/bg_title.png',
+      // 타이틀 v2.1 (시범): 타이틀 화면에만 쓰는 새 배경. 도감·옵션은 위 bg_title 그대로
+      titleScreen: 'assets/title/bg_title.png',
+      // 도감 v2.5: 도감 화면 전용 배경판 (제목·토끼·창 테두리가 그림에 포함)
+      codexScreen: 'assets/codex/codex_backplate.png',
+      // 랭킹 v2.9: 랭킹 화면 전용 배경판 (배경·토끼 구름·제목·닫기 그림 포함, rank29 묶음이 모두 있을 때만)
+      rankingScreen: 'assets/ranking/ranking_backplate.png',
+      // 옵션 v3.2: 옵션 화면 전용 배경판 (제목·토끼·항목 이름·아이콘·닫기 그림 포함, opt32 묶음이 모두 있을 때만)
+      settingsScreen: 'assets/options/options_backplate_1280x720.png',
+      // 플레이 v3.8: 플레이 화면 전체 스킨 (배경 + SCORE/NEXT/진화도 판 + 유리 상자 + 일시정지 그림 포함). play38 묶음이 있을 때만
+      gameScreen: 'assets/gameplay/gameplay_full_skin_clean_2560x1440.png',
+      game:     'assets/bg/bg_game.png',
+      gameover: 'assets/bg/bg_gameover.png',
+      // v1.4 선택 오버레이 (배경 위·내용 아래, 가운데 플레이 영역은 비어 있는 그림). 파일이 없으면 생략
+      starsOverlay: 'assets/bg/stars_overlay.png',
+      dustOverlay:  'assets/bg/cloud_dust_overlay.png',
+    },
+    ui: {
+      logo:        'assets/ui/logo.png',               // 타이틀 로고 560×300
+      box:         'assets/ui/glass_box.png',          // 유리 상자 프레임 520×620
+      dropper:     'assets/ui/dropper.png',            // 드로퍼 (v4.2 이지 + 구름 1672×941)
+      mascotTop:   'assets/ui/mascot_gameover.png',    // 게임 종료 카드 위 캐릭터 440×300
+      // 구름 토끼 장식 (파일이 있을 때만 표시) — 아트 요청 중
+      decoTitle:   'assets/ui/deco_rabbit_title.png',  // 타이틀 로고 옆 손 흔드는 토끼 360×330
+      decoPanel:   'assets/ui/deco_rabbit_panel.png',  // 옵션·랭킹·종료 창 모서리 토끼 240×280
+    },
+    fx: {
+      star:     'assets/fx/fx_star.png',
+      sparkle:  'assets/fx/fx_sparkle.png',
+      dust:     'assets/fx/fx_dust.png',
+    },
+    // UI 묶음: 묶음 안의 파일이 모두 있으면 스테이지에 .ui-<묶음> 클래스가 붙고 css/skin.css 의 그림 UI 가 켜짐
+    uiKits: {
+      png: [
+        'btn_start_normal', 'btn_start_hover', 'btn_start_pressed', 'btn_sub_normal', 'btn_sub_hover', 'btn_sub_pressed', 'ui_title_best',
+        'ui_score', 'ui_next', 'ui_evolution', 'btn_pause_normal', 'btn_pause_pressed', 'panel_toast',
+        'panel_pause', 'btn_wide_primary_normal', 'btn_wide_primary_hover', 'btn_wide_primary_pressed',
+        'btn_wide_secondary_normal', 'btn_wide_secondary_hover', 'btn_wide_secondary_pressed',
+        'panel_gameover', 'pill_title', 'input_name', 'btn_register_normal', 'btn_register_hover', 'btn_register_pressed',
+        'btn_tile_normal', 'btn_tile_pressed', 'btn_tile_gold_normal', 'btn_tile_gold_pressed', 'bubble_newbest', 'badge_new',
+        'panel_codex', 'codex_cell', 'codex_cell_selected', 'codex_cell_locked', 'panel_codex_detail',
+        'panel_settings', 'slider_track', 'slider_thumb', 'toggle_on', 'toggle_off',
+        'panel_ranking', 'rank_tab_on', 'rank_tab_off', 'rank_badge_1', 'rank_badge_2', 'rank_badge_3',
+        'panel_confirm', 'btn_close_normal', 'btn_close_pressed',
+        // v1.4
+        'evo_row_current', 'badge_num', 'panel_register', 'pill_small', 'setting_row',
+        'btn_small_danger_normal', 'btn_small_danger_hover', 'btn_small_danger_pressed',
+        'rank_row', 'rank_row_latest', 'my_rank_row', 'rank_badge_n', 'chip_left', 'chip_mid', 'chip_right', 'pill_title_small',
+      ],
+      // 타이틀 v2.1~2.2 (assets/title/, v2.2 부터 원본 2배 → 화면 크기로 줄여 그림). 모두 있으면 .ui-title21 → css/skin-title.css
+      title21: [
+        '../title/bg_title', '../title/title_logo_with_bunny', '../title/btn_start_normal',
+        '../title/btn_codex_normal', '../title/btn_ranking_normal', '../title/btn_settings_normal',
+        // v2.2: hover/pressed, BEST 판
+        '../title/btn_start_hover', '../title/btn_start_pressed', '../title/btn_codex_hover', '../title/btn_codex_pressed',
+        '../title/btn_ranking_hover', '../title/btn_ranking_pressed', '../title/btn_settings_hover', '../title/btn_settings_pressed',
+        '../title/ui_title_best',
+      ],
+      // 도감 v2.5 (assets/codex/). 모두 있으면 .ui-codex25 → css/skin-codex.css
+      codex25: [
+        '../codex/codex_backplate', '../codex/codex_cell_normal', '../codex/codex_cell_selected', '../codex/codex_cell_locked',
+        '../codex/codex_badge_normal', '../codex/codex_badge_selected', '../codex/codex_item_stage', '../codex/codex_description_panel',
+        '../codex/codex_close_normal', '../codex/codex_locked_silhouette',
+        // v2.6
+        '../codex/codex_close_hover', '../codex/codex_close_pressed', '../codex/codex_count_plate',
+      ],
+      // 도감 v2.7 선택 상태 (따로 묶음: 없어도 v2.6 도감은 그대로). 모두 있으면 .ui-codex27
+      codex27: ['../codex/codex_cell_hover', '../codex/codex_cell_locked_selected'],
+      // 랭킹 v2.9 (assets/ranking/). 모두 있으면 .ui-rank29 → css/skin-ranking.css
+      //  배경판(ranking_backplate)에 배경·토끼 구름·제목·닫기 그림이 모두 들어 있음
+      rank29: [
+        '../ranking/ranking_backplate', '../ranking/ranking_tab_on', '../ranking/ranking_tab_off', '../ranking/ranking_table_header',
+        '../ranking/ranking_row_normal', '../ranking/ranking_row_1', '../ranking/ranking_row_2', '../ranking/ranking_row_3',
+        '../ranking/ranking_row_mine', '../ranking/ranking_medal_1', '../ranking/ranking_medal_2', '../ranking/ranking_medal_3',
+      ],
+      // 랭킹 v3.0~3.1 보완 (따로 묶음: 없어도 v2.9 랭킹은 그대로). 모두 있으면 .ui-rank30 — 닫기 hover/pressed, 방금 등록 행
+      rank30: ['../ranking/ranking_close_hover', '../ranking/ranking_close_pressed', '../ranking/ranking_row_latest', '../ranking/ranking_row_latest_overlay'],
+      // 옵션 v3.2 (assets/options/). 모두 있으면 .ui-opt32 → css/skin-options.css
+      opt32: [
+        '../options/options_backplate_1280x720', '../options/slider_track', '../options/slider_knob', '../options/toggle_on', '../options/toggle_off',
+        '../options/reset_normal', '../options/reset_hover', '../options/reset_pressed',
+      ],
+      // 옵션 닫기 hover/pressed (v3.3, 선택 묶음). 모두 있으면 .ui-opt32close
+      opt32close: ['../options/close_hover', '../options/close_pressed'],
+      // 확인 창 v3.4 (assets/confirm/). 모두 있으면 .ui-confirm34 → css/skin-confirm.css
+      confirm34: ['../confirm/confirm_panel', '../confirm/confirm_btn_yes', '../confirm/confirm_btn_no'],
+      // 플레이 화면 v3.8 (assets/gameplay/). 있으면 .ui-play38 → css/skin-play.css + board38 좌표
+      play38: ['../gameplay/gameplay_full_skin_clean_2560x1440'],
+      // 플레이 v3.9: 진화도 현재 단계 강조 줄 (따로 묶음). 있으면 .ui-play39
+      play39: ['../gameplay/evo_row_current'],
+      // 일시정지 v3.6 (assets/pause/, 아트 요청 중). 모두 있으면 .ui-pause36 → css/skin-pause.css. 없으면 지금 일시정지 창 그대로
+      pause36: [
+        '../pause/pause_panel', '../pause/pause_btn_main_normal', '../pause/pause_btn_main_hover', '../pause/pause_btn_main_pressed',
+        '../pause/pause_btn_sub_normal', '../pause/pause_btn_sub_hover', '../pause/pause_btn_sub_pressed',
+        '../pause/pause_icon_resume', '../pause/pause_icon_retry', '../pause/pause_icon_settings', '../pause/pause_icon_home',
+      ],
+    },
+    sound: {
+      bgm:      'assets/sound/bgm_main.mp3',
+      drop:     'assets/sound/sfx_drop.mp3',
+      land:     'assets/sound/sfx_land.mp3',
+      merge:    'assets/sound/sfx_merge.mp3',
+      mergeBig: 'assets/sound/sfx_merge_big.mp3',
+      gameover: 'assets/sound/sfx_gameover.mp3',
+      click:    'assets/sound/sfx_click.mp3',
+    },
+  },
+
+  // 믹싱: 파일 자체 음량에 곱하는 기본 배율 (설정 화면 슬라이더는 이 위에 추가로 곱해짐)
+  mix: {
+    sfx: 0.6,   // 효과음 전체 60% (v0.3.2)
+    bgm: 2.0,   // v0.3.3 새 BGM 은 파일 평균 음량이 이전 곡보다 약 6.7dB 작음 → +6dB 로 이전 곡과 비슷하게 (파일은 그대로)
+    // 소리별 보정 (1.0 = 파일 그대로). 아트 쪽 파일은 그대로 두고 여기서만 조정
+    trim: {
+      mergeBig: 1.26,  // +2dB: v0.3.2 아트 파일(-3.5dB)이 일반 합체보다 작게 들려 보정 → 일반 합체보다 약 1dB 크게
+    },
+  },
+
+  storageKey: 'cloudmerge.v1',   // 기존 기록 호환을 위해 유지
+};
+
+</script>
+<script>
+/* =========================================================
+ * 저장 데이터 (localStorage)
+ * best: 최고 점수 / discovered: 도감 해금 / ranking: 이 기기 랭킹 (닉네임 등록) / settings
+ * ========================================================= */
+const Store = (() => {
+  const defaults = () => ({
+    best: 0,
+    discovered: CONFIG.tiers.map(() => false),
+    ranking: [],              // [{name, score, date, maxTier}] 점수순, 최대 500개 보관 (전체 랭킹 화면은 상위 10개)
+    lastName: '',             // 마지막으로 등록한 닉네임 (다음 입력칸에 미리 채움)
+    settings: { bgm: 0.6, sfx: 0.8, guide: true },
+    stats: { plays: 0, merges: 0 },
+    counts: CONFIG.tiers.map(() => 0),   // 단계별 획득 개수 (도감 상세)
+  });
+
+  let data = defaults();
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(CONFIG.storageKey);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        data = { ...defaults(), ...saved, settings: { ...defaults().settings, ...(saved.settings || {}) } };
+      }
+    } catch (e) { /* 저장소 사용 불가 시 메모리로만 동작 */ }
+    return data;
+  }
+
+  function save() {
+    try { localStorage.setItem(CONFIG.storageKey, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function discover(tierIndex) {
+    if (!data.discovered[tierIndex]) {
+      data.discovered[tierIndex] = true;
+      save();
+      return true; // 새로 발견
+    }
+    return false;
+  }
+
+  const RANK_SIZE = 10;     // 화면에 보이는 전체 랭킹
+  const KEEP = 500;         // 보관하는 기록 수 (내 순위가 10위 밖이어도 표시하려고)
+  const NAME_MAX = 10;
+
+  /** 이 점수를 등록하면 몇 위가 되는지 (0점은 등록 안 함) */
+  function rankFor(score) {
+    if (score <= 0) return null;
+    const pos = data.ranking.filter((r) => r.score >= score).length;   // 동점이면 먼저 등록한 사람이 위
+    return pos < KEEP ? pos + 1 : null;
+  }
+
+  /** 이름별 기록 (내 랭킹). 순위는 전체 기준 */
+  function recordsOf(name) {
+    const n = cleanName(name);
+    if (!n) return [];
+    return data.ranking.map((r, i) => ({ ...r, rank: i + 1 })).filter((r) => r.name === n);
+  }
+
+  function addCount(tierIndex) {
+    if (!Array.isArray(data.counts) || data.counts.length !== CONFIG.tiers.length) data.counts = CONFIG.tiers.map((_, i) => (data.counts && data.counts[i]) || 0);
+    data.counts[tierIndex]++;
+    clearTimeout(saveTimer); saveTimer = setTimeout(save, 1000);   // 판 도중 타이틀로 나가도 남도록 (모아서 저장)
+  }
+  let saveTimer = null;
+
+  /** 게임 종료: 최고 점수·판 수만 기록. 랭킹 등록은 registerRank 에서 따로 */
+  function finishGame(score, maxTier) {
+    const isNewBest = score > data.best;
+    if (isNewBest) data.best = score;
+    data.stats.plays++;
+    save();
+    return { isNewBest, rank: rankFor(score) };
+  }
+
+  /** 닉네임을 정리 (앞뒤 공백 제거, 연속 공백 1칸, 최대 10글자). 비면 null */
+  function cleanName(name) {
+    const n = String(name || '').replace(/\s+/g, ' ').trim();
+    return n ? Array.from(n).slice(0, NAME_MAX).join('') : null;
+  }
+
+  /** 랭킹 등록. 반환: 등록된 순위 (못 들면 null) */
+  function registerRank(name, score, maxTier) {
+    const n = cleanName(name);
+    if (!n || !rankFor(score)) return null;
+    const d = new Date();   // 기기 현지 날짜 (UTC 로 쓰면 한국 오전 0~9시에 전날로 찍힘)
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const entry = { name: n, score, maxTier, date };
+    data.ranking.push(entry);
+    data.ranking.sort((a, b) => b.score - a.score);   // 안정 정렬 → 동점은 먼저 등록한 기록이 위
+    data.ranking = data.ranking.slice(0, KEEP);
+    data.lastName = n;
+    save();
+    return data.ranking.indexOf(entry) + 1;
+  }
+
+  function reset() { data = defaults(); save(); }
+
+  return { load, save, discover, finishGame, rankFor, registerRank, recordsOf, addCount, cleanName, NAME_MAX, RANK_SIZE, reset, get: () => data };
+})();
+
+</script>
+<script>
+/* =========================================================
+ * 리소스 로더
+ * - 실제 PNG가 있으면 그것을 쓰고, 없으면 임시 그림을 코드로 생성
+ * - 오브젝트 스프라이트는 getSprite(tierIndex) 로 가져옴
+ * - UI 묶음(CONFIG.assets.uiKits)은 묶음 안의 파일이 모두 있을 때만 '사용 가능'
+ * ========================================================= */
+const Assets = (() => {
+  const sprites = [];       // tier index -> HTMLImageElement | HTMLCanvasElement
+  const isPlaceholder = []; // tier index -> boolean
+  const images = {};        // key -> HTMLImageElement | null
+  const kits = {};          // 'hud' | 'btn' | 'panel' -> true/false
+  const kitMissing = {};    // 묶음별 빠진 파일 목록 (확인용)
+  let dropper = null;       // { img, visibleBottom }
+
+  function loadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
+
+  /* ---------- 임시 그림: 단계 번호가 적힌 원 ----------
+   * 일부러 단순하게 만듦 (새 아트가 이 모양에 끌려가지 않도록).
+   * 원 크기 = 실제 충돌 판정 원 크기 (game.js 의 원형 판정과 같은 계산)
+   */
+  function makePlaceholder(tier, size = 256) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const g = c.getContext('2d');
+    const cx = size / 2, cy = size / 2;
+    const r = size * 0.85 / 2 * (2 / 2.08);   // game.js: 그림 폭 0.85 → 원 지름 2r 에 맞춤
+    const hue = (tier.id - 1) * 33;           // 단계 구분용 색 (채도 낮게)
+    g.fillStyle = `hsl(${hue}, 28%, 78%)`;
+    g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
+    g.lineWidth = size * 0.035;
+    g.strokeStyle = `hsl(${hue}, 25%, 45%)`;
+    g.setLineDash([size * 0.06, size * 0.04]);
+    g.beginPath(); g.arc(cx, cy, r - g.lineWidth / 2, 0, Math.PI * 2); g.stroke();
+    g.setLineDash([]);
+    g.fillStyle = `hsl(${hue}, 30%, 28%)`;
+    g.font = `bold ${Math.round(r * 0.95)}px sans-serif`;
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(String(tier.id), cx, cy + r * 0.04);
+    return c;
+  }
+
+  /** 드로퍼 그림에서 불투명한 부분의 맨 아래 y 를 찾음 (오브젝트를 매다는 위치) */
+  function measureVisibleBottom(img) {
+    try {
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      const g = c.getContext('2d');
+      g.drawImage(img, 0, 0);
+      const d = g.getImageData(0, 0, img.width, img.height).data;
+      for (let y = img.height - 1; y >= 0; y--) {
+        for (let x = 0; x < img.width; x++) if (d[(y * img.width + x) * 4 + 3] > 40) return y + 1;
+      }
+      return img.height;
+    } catch (e) {
+      return Math.round(img.height * 0.85);  // 픽셀을 못 읽는 환경 (file:// 직접 열기 등)
+    }
+  }
+
+  async function loadAll(onProgress) {
+    const jobs = [];
+    CONFIG.tiers.forEach((t, i) => {
+      jobs.push(loadImage(CONFIG.assets.object(t)).then((img) => {
+        sprites[i] = img || makePlaceholder(t);
+        isPlaceholder[i] = !img;
+      }));
+    });
+    const flat = { ...CONFIG.assets.bg, ...CONFIG.assets.ui, ...CONFIG.assets.fx };
+    for (const [k, src] of Object.entries(flat)) {
+      jobs.push(loadImage(src).then((img) => { images[k] = img; }));
+    }
+    for (const [kit, names] of Object.entries(CONFIG.assets.uiKits)) {
+      const missing = [];
+      jobs.push(Promise.all(names.map((n) => loadImage(`assets/ui/${n}.png`).then((img) => { if (!img) missing.push(n); })))
+        .then(() => { kits[kit] = missing.length === 0; kitMissing[kit] = missing; }));
+    }
+    let done = 0;
+    await Promise.all(jobs.map((p) => p.then(() => onProgress && onProgress(++done / jobs.length))));
+    if (images.dropper) dropper = { img: images.dropper, visibleBottom: measureVisibleBottom(images.dropper) };
+  }
+
+  /** 오브젝트 스프라이트를 DOM용 썸네일로 복제 */
+  function thumbnail(tierIndex, px) {
+    const src = sprites[tierIndex];
+    const c = document.createElement('canvas');
+    c.width = c.height = px * 2; // 레티나 대응
+    c.style.width = c.style.height = px + 'px';
+    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    return c;
+  }
+
+  return {
+    loadAll,
+    getSprite: (i) => sprites[i],
+    isPlaceholder: (i) => isPlaceholder[i],
+    image: (k) => images[k],
+    dropper: () => dropper,
+    kit: (k) => !!kits[k],
+    report: () => ({
+      objects: CONFIG.tiers.map((t, i) => (isPlaceholder[i] ? null : t.id)).filter(Boolean),
+      images: Object.fromEntries(Object.keys(images).map((k) => [k, !!images[k]])),
+      kits: { ...kits }, kitMissing: { ...kitMissing },
+    }),
+    thumbnail,
+  };
+})();
+
+</script>
+<script>
+/* =========================================================
+ * 아이콘 — 아트 쪽에서 받은 PNG 를 그대로 표시 (assets/ui/icon_<이름>.png)
+ * HTML 에 <i data-ico="home"></i> 처럼 쓰면 Icons.apply() 가 <img> 를 넣음.
+ * 파일이 없으면 그 자리는 비워 둠 (개발 쪽에서 아이콘을 그리지 않음).
+ * ========================================================= */
+const Icons = (() => {
+  function src(name) {
+    const p = `assets/ui/icon_${name}.png`;
+    return (window.__ASSET_DATA && window.__ASSET_DATA[p]) || p;
+  }
+  function apply(root = document) {
+    root.querySelectorAll('[data-ico]').forEach((el) => {
+      if (el.firstChild) return;
+      const img = new Image();
+      img.alt = '';
+      img.onerror = () => { el.style.display = 'none'; };
+      img.src = src(el.dataset.ico);
+      el.appendChild(img);
+    });
+  }
+  return { apply };
+})();
+
+</script>
+<script>
+/* =========================================================
+ * 숫자 이미지 (assets/numbers/<색>/<글자>.png, 128×160 셀)
+ *  - HTML: <span class="num" data-num="score|gold|purple|cream"></span>
+ *  - Digits.set(el, 12345) → 쉼표 넣어 숫자 이미지로 그림
+ *  - 글자마다 실제 그림 영역만 잘라 붙임 (셀 좌우 여백이 커서 그대로 붙이면 간격이 벌어짐)
+ *  - 쉼표·점은 숫자 아래선에 맞춤 (원본 셀에서는 쉼표가 아래선보다 위에 떠 있음)
+ *  - 글자 높이 = 요소의 font-size, 폭이 data-maxw(없으면 max-width)를 넘으면 비율 유지하며 자동 축소
+ *  - 그림을 못 불러오면 그냥 글자로 표시 (콘솔에 한 번 경고)
+ * ========================================================= */
+const Digits = (() => {
+  const VARIANTS = ['score', 'gold', 'purple', 'cream'];
+  const FILES = { '0': '0', '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9',
+    ',': 'comma', '.': 'dot', '+': 'plus', '-': 'minus', '/': 'slash', ':': 'colon', '%': 'percent', '×': 'times' };
+  const CELL_H = 160;
+  // 픽셀을 못 읽는 환경(file:// 직접 열기)용 기본 영역 [x0, y0, x1, y1] (score 색 기준 측정값)
+  const DEFAULT_BOX = [22, 28, 107, 132];
+  const DEFAULT_SMALL = { ',': [40, 52, 84, 109], '.': [45, 60, 84, 101] };
+  const sets = {};          // variant -> { char: {img, box} }
+  let warned = false;
+
+  function loadImage(src) {
+    return new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+  }
+  function measure(img, ch) {
+    try {
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+      const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+      const d = g.getImageData(0, 0, img.width, img.height).data;
+      let x0 = img.width, y0 = img.height, x1 = 0, y1 = 0;
+      for (let y = 0; y < img.height; y++) for (let x = 0; x < img.width; x++) {
+        if (d[(y * img.width + x) * 4 + 3] > 20) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      }
+      return x1 > x0 ? [x0, y0, x1 + 1, y1 + 1] : DEFAULT_BOX;
+    } catch (e) {
+      return DEFAULT_SMALL[ch] || DEFAULT_BOX;
+    }
+  }
+
+  async function load() {
+    await Promise.all(VARIANTS.map(async (v) => {
+      const set = {};
+      await Promise.all(Object.entries(FILES).map(async ([ch, f]) => {
+        const img = await loadImage(`assets/numbers/${v}/${f}.png`);
+        if (img) set[ch] = { img, box: measure(img, ch) };
+      }));
+      // 숫자 10개가 다 있어야 사용
+      if ('0123456789'.split('').every((d) => set[d])) {
+        // 숫자 공통 아래선/윗선 (가장 큰 숫자 기준)
+        const digits = '0123456789'.split('').map((d) => set[d].box);
+        set._top = Math.min(...digits.map((b) => b[1]));
+        set._base = Math.max(...digits.map((b) => b[3]));
+        sets[v] = set;
+      }
+    }));
+    return Object.keys(sets);
+  }
+
+  function format(value) {
+    return typeof value === 'number' ? Math.floor(value).toLocaleString('en-US') : String(value);
+  }
+
+  /** el 에 숫자를 그림. 숫자 이미지가 없으면 글자로 */
+  function set(el, value) {
+    if (!el) return;
+    const text = format(value);
+    el.dataset.value = text;
+    el.setAttribute('aria-label', text);
+    const s = sets[el.dataset.num || 'score'];
+    if (!s || [...text].some((ch) => !s[ch])) {
+      if (!s && !warned && Object.keys(sets).length === 0) { console.warn('[Digits] 숫자 이미지를 불러오지 못해 글자로 표시합니다'); warned = true; }
+      el.textContent = text;
+      el.classList.remove('num-img');
+      return;
+    }
+    const cs = getComputedStyle(el);
+    let h = parseFloat(cs.fontSize) || 32;                // 숫자 높이(px) = 글자 크기
+    const glyphH = s._base - s._top;                         // 원본에서 숫자 높이
+    const gap = -0.04;                                       // 글자 사이 (높이 대비, 외곽선이 살짝 겹치게)
+    const pieces = [...text].map((ch) => {
+      const b = s[ch].box;
+      return { ch, img: s[ch].img, sx: b[0], sw: b[2] - b[0], sy: b[1], sh: b[3] - b[1],
+               // 쉼표·점은 아래선에 붙임, 나머지는 원래 높이 위치 유지
+               dy: (ch === ',' || ch === '.') ? s._base - (b[3] - b[1]) - s._top + glyphH * 0.12 : b[1] - s._top };
+    });
+    const widthAt = (hh) => { const k = hh / glyphH; return pieces.reduce((w, p) => w + p.sw * k, 0) + gap * hh * (pieces.length - 1); };
+    const maxW = parseFloat(el.dataset.maxw) || parseFloat(cs.maxWidth);   // data-maxw 우선 (칸은 넓고 숫자만 제한할 때)
+    if (maxW > 0 && widthAt(h) > maxW) h *= maxW / widthAt(h);   // 큰 수 자동 축소
+    const k = h / glyphH, W = Math.ceil(widthAt(h)), H = Math.ceil(h * (1 + 0.14));
+    const dpr = 2;
+    const c = document.createElement('canvas');
+    c.width = W * dpr; c.height = H * dpr;
+    c.style.width = W + 'px'; c.style.height = H + 'px';
+    const g = c.getContext('2d'); g.scale(dpr, dpr); g.imageSmoothingQuality = 'high';
+    let x = 0;
+    for (const p of pieces) {
+      g.drawImage(p.img, p.sx, p.sy, p.sw, p.sh, x, p.dy * k, p.sw * k, p.sh * k);
+      x += p.sw * k + gap * h;
+    }
+    el.textContent = '';
+    el.appendChild(c);
+    el.classList.add('num-img');
+  }
+
+  return { load, set, available: () => Object.keys(sets) };
+})();
+
+</script>
+<script>
+/* =========================================================
+ * 사운드 (WebAudio)
+ *  - CONFIG.assets.sound 의 MP3 를 디코딩해 버퍼로 재생 (지연 적고, 겹쳐도 가벼움)
+ *  - 디코딩이 안 되는 환경(file:// 로 연 경우 등)은 <audio> 로 대체
+ *  - 파일이 없으면 임시 합성음
+ *
+ *  자동재생 정책: 첫 클릭/터치 전에는 AudioContext 가 멈춰 있음 → unlock() 이 깨움.
+ *               그 전에 요청된 BGM 은 깨어나는 즉시 시작됨.
+ *  BGM 상태:    start(처음부터) / pause / resume / stop
+ *  효과음 겹침:  소리별 최소 간격 + 동시 재생 수 제한
+ * ========================================================= */
+const Sound = (() => {
+  let ctx = null, sfxGain = null, bgmGain = null;
+  const buffers = {};     // name -> AudioBuffer
+  const elements = {};    // name -> HTMLAudioElement (대체 경로)
+  const lastPlayed = {};  // name -> ctx 시간
+  let voices = 0;
+
+  // 소리별 설정: gap = 같은 소리 최소 간격(초), max = 동시에 울릴 수 있는 수
+  const RULES = {
+    land:     { gap: 0.06, max: 3 },
+    drop:     { gap: 0.05, max: 2 },
+    merge:    { gap: 0.03, max: 4 },
+    mergeBig: { gap: 0.08, max: 2 },
+    click:    { gap: 0.03, max: 2 },
+    gameover: { gap: 1.0,  max: 1 },
+  };
+  const MAX_VOICES = 10;
+  const active = {};      // name -> 현재 울리는 수
+
+  // BGM
+  let bgmWanted = false;  // 게임이 BGM 을 원하는 상태인가 (일시정지 중엔 false)
+  let bgmSource = null, bgmLoop = null, bgmOffset = 0, bgmStartedAt = 0;
+
+  function vol(kind) { return Store.get().settings[kind] ?? 0.7; }
+  function trimOf(name) { return (CONFIG.mix.trim && CONFIG.mix.trim[name]) || 1; }
+
+  function ensureCtx() {
+    if (!ctx) {
+      try {
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        sfxGain = ctx.createGain(); sfxGain.connect(ctx.destination);
+        bgmGain = ctx.createGain(); bgmGain.connect(ctx.destination);
+        updateVolume();
+      } catch (e) { ctx = null; }
+    }
+    return ctx;
+  }
+
+  /** 첫 사용자 입력에서 호출 → 멈춰 있던 오디오를 깨움 */
+  function unlock() {
+    if (!ensureCtx()) return;
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(() => { if (bgmWanted && !bgmSource) playBgmSource(); }).catch(() => {});
+    }
+  }
+
+  /* ---------- 로딩 ---------- */
+  async function loadOne(name, src) {
+    try {
+      if (!ensureCtx()) throw new Error('no ctx');
+      const res = await fetch(src);
+      if (!res.ok) throw new Error(res.status);
+      const buf = await ctx.decodeAudioData(await res.arrayBuffer());
+      buffers[name] = buf;
+      if (name === 'bgm') bgmLoop = findLoop(buf);
+      if (name === 'bgm' && bgmWanted && !bgmSource) playBgmSource();
+    } catch (e) {
+      // 대체 경로: <audio>
+      const a = new Audio();
+      a.preload = 'auto';
+      a.addEventListener('canplaythrough', () => {
+        elements[name] = a;
+        if (name === 'bgm' && bgmWanted) playBgmElement();
+      }, { once: true });
+      a.src = src;
+    }
+  }
+
+  function preload() {
+    for (const [name, src] of Object.entries(CONFIG.assets.sound)) loadOne(name, src);
+  }
+
+  /** BGM 앞뒤 무음을 잘라 끊김 없는 반복 구간을 찾음 */
+  function findLoop(buf) {
+    const d = buf.getChannelData(0), thr = 0.003;
+    let s = 0, e = d.length - 1;
+    while (s < e && Math.abs(d[s]) < thr) s++;
+    while (e > s && Math.abs(d[e]) < thr) e--;
+    if (e - s < buf.sampleRate) return { start: 0, end: buf.duration }; // 1초 미만이면 그대로
+    return { start: s / buf.sampleRate, end: (e + 1) / buf.sampleRate };
+  }
+
+  /* ---------- 효과음 ---------- */
+  // 임시 합성음: [주파수, 길이, 파형, 최종주파수]
+  const synth = {
+    drop:     [520, 0.08, 'sine', 380],
+    land:     [180, 0.07, 'triangle', 120],
+    merge:    [600, 0.14, 'sine', 1000],
+    mergeBig: [400, 0.35, 'triangle', 1200],
+    gameover: [440, 0.6, 'sawtooth', 110],
+    click:    [880, 0.05, 'square', 880],
+  };
+
+  function play(name, { pitch = 1 } = {}) {
+    if (vol('sfx') <= 0 || !ensureCtx()) return;
+    const t = ctx.currentTime;
+    const rule = RULES[name] || { gap: 0.03, max: 3 };
+    if (t - (lastPlayed[name] ?? -1) < rule.gap) return;
+    if ((active[name] || 0) >= rule.max || voices >= MAX_VOICES) return;
+    lastPlayed[name] = t;
+
+    const buf = buffers[name];
+    if (buf) {
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.playbackRate.value = pitch;   // WebAudio 는 속도와 함께 음높이도 바뀜
+      const tr = trimOf(name);
+      if (tr !== 1) {                   // 소리별 보정이 있을 때만 게인 노드 추가
+        const g = ctx.createGain(); g.gain.value = tr;
+        src.connect(g).connect(sfxGain);
+      } else src.connect(sfxGain);
+      track(name, src);
+      src.start();
+      return;
+    }
+    const el = elements[name];
+    if (el) {
+      const a = el.cloneNode();
+      a.volume = Math.min(1, vol('sfx') * CONFIG.mix.sfx * trimOf(name));
+      a.preservesPitch = false;
+      a.playbackRate = pitch;
+      active[name] = (active[name] || 0) + 1; voices++;
+      a.onended = () => { active[name]--; voices--; };
+      a.play().catch(() => { active[name]--; voices--; });
+      return;
+    }
+    if (!synth[name]) return;
+    const [f0, dur, type, f1] = synth[name];
+    const o = ctx.createOscillator();
+    const gn = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f0 * pitch, t);
+    o.frequency.exponentialRampToValueAtTime(f1 * pitch, t + dur);
+    gn.gain.setValueAtTime(0.18, t);
+    gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(gn).connect(sfxGain);
+    track(name, o);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+
+  function track(name, node) {
+    active[name] = (active[name] || 0) + 1; voices++;
+    node.onended = () => { active[name]--; voices--; };
+  }
+
+  /* ---------- BGM ---------- */
+  function playBgmSource() {
+    const buf = buffers.bgm;
+    if (!buf || !ctx || ctx.state !== 'running') return;
+    stopBgmSource();
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    src.loopStart = bgmLoop.start;
+    src.loopEnd = bgmLoop.end;
+    src.connect(bgmGain);
+    const from = bgmLoop.start + (bgmOffset % (bgmLoop.end - bgmLoop.start));
+    // 처음 시작할 때만 살짝 페이드인
+    bgmGain.gain.cancelScheduledValues(ctx.currentTime);
+    bgmGain.gain.setValueAtTime(0, ctx.currentTime);
+    bgmGain.gain.linearRampToValueAtTime(vol('bgm') * CONFIG.mix.bgm, ctx.currentTime + 0.6);
+    src.start(0, from);
+    bgmSource = src;
+    bgmStartedAt = ctx.currentTime - (from - bgmLoop.start);
+  }
+  function stopBgmSource() {
+    if (!bgmSource) return;
+    try { bgmSource.stop(); } catch (e) {}
+    bgmSource.disconnect();
+    bgmSource = null;
+  }
+  function playBgmElement() {
+    const a = elements.bgm;
+    if (!a) return;
+    a.loop = true; a.volume = Math.min(1, vol('bgm') * CONFIG.mix.bgm);
+    a.play().catch(() => {});
+  }
+
+  /** 새 판 시작: BGM 을 처음부터 */
+  function startBgm() {
+    bgmWanted = true; bgmOffset = 0;
+    if (buffers.bgm) playBgmSource();
+    else if (elements.bgm) { elements.bgm.currentTime = 0; playBgmElement(); }
+    // 아직 로딩 중이면 로딩 완료 / 입력 잠금 해제 시점에 자동 시작
+  }
+  /** 일시정지: 현재 위치 기억 */
+  function pauseBgm() {
+    if (!bgmWanted) return;
+    bgmWanted = false;
+    if (bgmSource) { bgmOffset = ctx.currentTime - bgmStartedAt; stopBgmSource(); }
+    if (elements.bgm) elements.bgm.pause();
+  }
+  /** 계속하기: 기억한 위치부터 */
+  function resumeBgm() {
+    bgmWanted = true;
+    if (buffers.bgm) playBgmSource();
+    else playBgmElement();
+  }
+  /** 게임 종료 / 타이틀로. fade(초) 를 주면 서서히 줄이며 멈춤 */
+  function stopBgm(fade = 0) {
+    bgmWanted = false; bgmOffset = 0;
+    if (bgmSource && fade > 0) {
+      const src = bgmSource; bgmSource = null;
+      const t = ctx.currentTime;
+      bgmGain.gain.cancelScheduledValues(t);
+      bgmGain.gain.setValueAtTime(bgmGain.gain.value, t);
+      bgmGain.gain.linearRampToValueAtTime(0, t + fade);
+      try { src.stop(t + fade + 0.02); } catch (e) {}
+      src.onended = () => src.disconnect();
+    } else stopBgmSource();
+    if (elements.bgm) { elements.bgm.pause(); elements.bgm.currentTime = 0; }
+  }
+
+  function updateVolume() {
+    if (!ctx) return;
+    const t = ctx.currentTime;
+    sfxGain.gain.setTargetAtTime(vol('sfx') * CONFIG.mix.sfx, t, 0.02);
+    bgmGain.gain.cancelScheduledValues(t);
+    bgmGain.gain.setTargetAtTime(vol('bgm') * CONFIG.mix.bgm, t, 0.05);
+    if (elements.bgm) elements.bgm.volume = Math.min(1, vol('bgm') * CONFIG.mix.bgm);
+  }
+
+  return {
+    preload, play, unlock, updateVolume,
+    startBgm, pauseBgm, resumeBgm, stopBgm,
+    // 테스트용 상태 확인
+    _debug: () => ({
+      ctx: ctx && ctx.state, loaded: Object.keys(buffers), fallback: Object.keys(elements),
+      bgmPlaying: !!bgmSource || !!(elements.bgm && !elements.bgm.paused),
+      loop: bgmLoop, voices,
+      sfxVol: sfxGain && +sfxGain.gain.value.toFixed(3), bgmVol: bgmGain && +bgmGain.gain.value.toFixed(3),
+    }),
+  };
+})();
+
+</script>
+<script>
+/* =========================================================
+ * 연출 (이미지 초안의 '오브젝트 그림자 예시', '합체(진화) 이펙트 예시' 구현)
+ *  - 떨어질 때: 속도선
+ *  - 바닥/오브젝트 충돌 시: 찌그러짐(squash) + 먼지
+ *  - 합체 시: 빛 번짐 + 별 파티클 + 새 오브젝트 팝업 + 점수 텍스트
+ * ========================================================= */
+const Effects = (() => {
+  let particles = [];
+  let texts = [];
+  let flashes = [];
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function mergeBurst(x, y, radius, tierIndex) {
+    const big = tierIndex >= 7;
+    flashes.push({ x, y, r: radius, life: 0, max: big ? 0.6 : 0.4 });
+    const n = big ? 22 : 12;
+    for (let i = 0; i < n; i++) {
+      const a = (Math.PI * 2 * i) / n + rand(-0.2, 0.2);
+      const sp = rand(1.5, 4) * (big ? 1.4 : 1);
+      particles.push({
+        kind: i % 3 === 0 ? 'star' : 'sparkle',
+        x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1,
+        size: rand(6, 12) * (big ? 1.4 : 1),
+        rot: rand(0, Math.PI), vr: rand(-0.2, 0.2),
+        life: 0, max: rand(0.5, 0.9),
+      });
+    }
+  }
+
+  function dust(x, y, radius) {
+    for (let i = 0; i < 6; i++) {
+      const dir = i < 3 ? -1 : 1;
+      particles.push({
+        kind: 'dust', x: x + dir * radius * 0.6, y,
+        vx: dir * rand(0.6, 1.6), vy: rand(-0.6, -0.1),
+        size: rand(5, 10) * (radius / 40 + 0.5),
+        rot: 0, vr: 0, life: 0, max: rand(0.35, 0.55),
+      });
+    }
+  }
+
+  function floatText(x, y, text, color = '#ffb52e') {
+    texts.push({ x, y, text, color, life: 0, max: 0.9 });
+  }
+
+  function update(dt) {
+    for (const p of particles) {
+      p.life += dt; p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.vr;
+      if (p.kind === 'dust') { p.vy -= 0.06; p.vx *= 0.95; }
+    }
+    particles = particles.filter((p) => p.life < p.max);
+    for (const t of texts) { t.life += dt; t.y -= 0.6; }
+    texts = texts.filter((t) => t.life < t.max);
+    for (const f of flashes) f.life += dt;
+    flashes = flashes.filter((f) => f.life < f.max);
+  }
+
+  function drawStar(g, size) {
+    g.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const r = i % 2 === 0 ? size : size * 0.45;
+      const a = (Math.PI * i) / 5 - Math.PI / 2;
+      g.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    g.closePath(); g.fill();
+  }
+
+  function draw(g) {
+    // 빛 번짐
+    for (const f of flashes) {
+      const k = f.life / f.max;
+      const grad = g.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * (1.2 + k));
+      grad.addColorStop(0, `rgba(255, 245, 190, ${0.8 * (1 - k)})`);
+      grad.addColorStop(1, 'rgba(255, 230, 150, 0)');
+      g.fillStyle = grad;
+      g.beginPath(); g.arc(f.x, f.y, f.r * (1.2 + k), 0, Math.PI * 2); g.fill();
+    }
+    // 파티클
+    for (const p of particles) {
+      const k = p.life / p.max;
+      g.save();
+      g.globalAlpha = 1 - k;
+      g.translate(p.x, p.y); g.rotate(p.rot);
+      const img = Assets.image(p.kind === 'star' ? 'star' : p.kind === 'dust' ? 'dust' : 'sparkle');
+      if (img) {
+        g.drawImage(img, -p.size, -p.size, p.size * 2, p.size * 2);
+      } else if (p.kind === 'dust') {
+        g.fillStyle = 'rgba(255,255,255,0.8)';
+        g.beginPath(); g.arc(0, 0, p.size * (0.6 + k * 0.6), 0, Math.PI * 2); g.fill();
+      } else {
+        g.fillStyle = p.kind === 'star' ? '#ffd84d' : '#fff6c2';
+        drawStar(g, p.size);
+      }
+      g.restore();
+    }
+    // 점수 텍스트
+    for (const t of texts) {
+      const k = t.life / t.max;
+      g.save();
+      g.globalAlpha = 1 - k * k;
+      g.font = 'bold 26px "Jua", "Pretendard", sans-serif';
+      g.textAlign = 'center';
+      g.lineWidth = 6; g.strokeStyle = '#ffffff';
+      g.strokeText(t.text, t.x, t.y);
+      g.fillStyle = t.color;
+      g.fillText(t.text, t.x, t.y);
+      g.restore();
+    }
+  }
+
+  function clear() { particles = []; texts = []; flashes = []; }
+
+  return { mergeBurst, dust, floatText, update, draw, clear };
+})();
+
+</script>
+<script>
+/* 자동 생성 파일 - tools/build_shapes.py 로 다시 만드세요. 직접 수정하지 마세요. */
+const SHAPES = {"1": {"src": 512, "verts": [[-201.0, 26.0], [-192.0, -9.0], [-182.0, -27.0], [-104.0, -98.0], [-14.0, -148.0], [5.0, -156.0], [38.0, -159.0], [57.0, -156.0], [79.0, -146.0], [102.0, -128.0], [183.0, -29.0], [199.0, 9.0], [198.0, 55.0], [185.0, 85.0], [163.0, 106.0], [94.0, 150.0], [56.0, 160.0], [-71.0, 158.0], [-106.0, 146.0], [-164.0, 108.0], [-192.0, 75.0], [-200.0, 48.0]], "area": 93853.0, "width": 400.0, "height": 319.0}, "2": {"src": 512, "verts": [[-201.0, -33.0], [-191.0, -84.0], [-185.0, -101.0], [-163.0, -124.0], [-134.0, -134.0], [-3.0, -140.0], [21.0, -139.0], [45.0, -133.0], [135.0, -99.0], [152.0, -89.0], [175.0, -62.0], [202.0, 24.0], [204.0, 55.0], [194.0, 83.0], [172.0, 104.0], [118.0, 133.0], [85.0, 140.0], [-35.0, 140.0], [-136.0, 135.0], [-158.0, 131.0], [-191.0, 108.0], [-203.0, 82.0]], "area": 98422.0, "width": 407.0, "height": 280.0}, "3": {"src": 512, "verts": [[-202.0, -2.0], [-182.0, -74.0], [-174.0, -91.0], [-151.0, -108.0], [-123.0, -118.0], [39.0, -149.0], [49.0, -148.0], [168.0, -76.0], [188.0, -59.0], [202.0, -28.0], [204.0, 12.0], [192.0, 54.0], [167.0, 82.0], [88.0, 125.0], [46.0, 144.0], [33.0, 147.0], [-58.0, 149.0], [-131.0, 145.0], [-179.0, 124.0], [-189.0, 115.0], [-199.0, 94.0], [-204.0, 18.0]], "area": 96259.5, "width": 408.0, "height": 298.0}, "4": {"src": 512, "verts": [[-148.0, 142.0], [-126.0, -100.0], [-125.0, -102.0], [-35.0, -196.0], [-28.0, -203.0], [-21.0, -204.0], [2.0, -195.0], [118.0, -141.0], [128.0, -135.0], [148.0, 135.0], [148.0, 146.0], [142.0, 163.0], [134.0, 171.0], [97.0, 196.0], [80.0, 200.0], [10.0, 204.0], [-24.0, 204.0], [-90.0, 198.0], [-100.0, 195.0], [-133.0, 177.0], [-141.0, 170.0], [-148.0, 154.0]], "area": 98712.0, "width": 296.0, "height": 408.0}, "5": {"src": 512, "verts": [[-150.0, -31.0], [-144.0, -46.0], [-119.0, -89.0], [-94.0, -128.0], [-81.0, -143.0], [-6.0, -203.0], [10.0, -203.0], [43.0, -182.0], [88.0, -140.0], [100.0, -126.0], [124.0, -86.0], [148.0, -33.0], [149.0, -6.0], [92.0, 178.0], [88.0, 187.0], [75.0, 195.0], [41.0, 204.0], [-34.0, 205.0], [-73.0, 200.0], [-102.0, 189.0], [-109.0, 179.0], [-150.0, -13.0]], "area": 90265.0, "width": 299.0, "height": 408.0}, "6": {"src": 512, "verts": [[-185.0, 14.0], [-156.0, -134.0], [-136.0, -183.0], [-127.0, -191.0], [-68.0, -204.0], [17.0, -204.0], [86.0, -202.0], [137.0, -190.0], [145.0, -184.0], [166.0, -139.0], [168.0, -130.0], [185.0, 15.0], [185.0, 28.0], [182.0, 41.0], [137.0, 182.0], [126.0, 199.0], [113.0, 205.0], [-114.0, 204.0], [-127.0, 199.0], [-138.0, 184.0], [-183.0, 45.0], [-186.0, 30.0]], "area": 131955.5, "width": 371.0, "height": 409.0}, "7": {"src": 512, "verts": [[-205.0, -33.0], [-195.0, -57.0], [-184.0, -69.0], [-129.0, -115.0], [-101.0, -127.0], [5.0, -149.0], [48.0, -146.0], [134.0, -116.0], [163.0, -96.0], [193.0, -60.0], [202.0, -43.0], [205.0, -19.0], [199.0, 25.0], [165.0, 111.0], [151.0, 125.0], [92.0, 146.0], [64.0, 148.0], [-136.0, 145.0], [-155.0, 139.0], [-163.0, 129.0], [-200.0, 32.0], [-205.0, -15.0]], "area": 99981.5, "width": 410.0, "height": 297.0}, "8": {"src": 512, "verts": [[-145.0, 9.0], [-143.0, 1.0], [-103.0, -132.0], [-94.0, -148.0], [-88.0, -153.0], [24.0, -203.0], [39.0, -205.0], [57.0, -199.0], [122.0, -159.0], [133.0, -142.0], [144.0, -4.0], [145.0, 75.0], [143.0, 140.0], [140.0, 151.0], [125.0, 182.0], [92.0, 203.0], [71.0, 205.0], [-107.0, 203.0], [-119.0, 196.0], [-139.0, 166.0], [-143.0, 154.0], [-145.0, 91.0]], "area": 102459.5, "width": 290.0, "height": 410.0}, "9": {"src": 512, "verts": [[-206.0, 29.0], [-200.0, 15.0], [-183.0, -12.0], [-165.0, -37.0], [-91.0, -115.0], [-73.0, -130.0], [-53.0, -137.0], [26.0, -150.0], [50.0, -149.0], [64.0, -144.0], [122.0, -111.0], [136.0, -99.0], [175.0, -40.0], [193.0, -7.0], [206.0, 32.0], [203.0, 61.0], [178.0, 115.0], [152.0, 143.0], [139.0, 147.0], [-154.0, 150.0], [-188.0, 94.0], [-205.0, 51.0]], "area": 96103.5, "width": 412.0, "height": 300.0}, "10": {"src": 512, "verts": [[-207.0, 24.0], [-199.0, 9.0], [-178.0, -15.0], [-147.0, -47.0], [-139.0, -52.0], [-72.0, -81.0], [1.0, -100.0], [20.0, -101.0], [34.0, -98.0], [142.0, -64.0], [154.0, -58.0], [187.0, -21.0], [205.0, 16.0], [208.0, 27.0], [204.0, 47.0], [184.0, 75.0], [161.0, 99.0], [148.0, 101.0], [-161.0, 99.0], [-166.0, 97.0], [-186.0, 75.0], [-204.0, 47.0]], "area": 65400.0, "width": 415.0, "height": 202.0}, "11": {"src": 512, "verts": [[-207.0, 96.0], [-166.0, -6.0], [-157.0, -24.0], [-154.0, -27.0], [-60.0, -109.0], [-6.0, -138.0], [1.0, -138.0], [58.0, -110.0], [160.0, -25.0], [174.0, -5.0], [207.0, 100.0], [205.0, 109.0], [196.0, 117.0], [177.0, 126.0], [152.0, 129.0], [51.0, 137.0], [-66.0, 135.0], [-142.0, 131.0], [-177.0, 125.0], [-184.0, 123.0], [-197.0, 115.0], [-206.0, 105.0]], "area": 79149.5, "width": 414.0, "height": 275.0}};
+
+</script>
+<script>
+/* =========================================================
+ * 게임 코어 (물리/드롭/합체/점수/게임오버)
+ * 화면(UI)과 분리되어 있으며, 이벤트 콜백으로만 UI에 알림.
+ *
+ *  상태:  idle → playing ⇄ paused → over
+ *  콜백:  onScore(score), onNext(currentTier, nextTier), onMaxTier(tierIndex),
+ *         onDiscover(tierIndex), onGameOver({score, maxTier})
+ * ========================================================= */
+const Game = (() => {
+  const { Engine, Bodies, Body, Composite, Events } = Matter;
+  const B = CONFIG.board;
+  const STEP = 1000 / 60;
+
+  let canvas, g, cb = {};
+  let engine, world;
+  let state = 'idle';
+  let score = 0, maxTier = 0;
+  let currentTier = 0, nextTier = 0;
+  let pointerX = (B.left + B.right) / 2;
+  let lastDropAt = 0, now = 0;
+  let mergeQueue = [];
+  let dangerSince = null;
+  let rafId = null, lastFrame = 0, acc = 0;
+  let overAnim = 0;
+  let slotMode = false;      // 이미지 자리 표시 (Slots.set / F2)
+  let debugShapes = false;   // true 면 충돌 모양을 분홍 선으로 표시 (Game.debugShapes(true))
+
+  /* ---------- 유틸 ---------- */
+  function pickSpawnTier() {
+    const w = CONFIG.drop.weights.slice(0, CONFIG.drop.spawnMaxTier);
+    const total = w.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < w.length; i++) { if ((r -= w[i]) < 0) return i; }
+    return 0;
+  }
+  const meta = (b) => b.plugin.cm;
+  const objects = () => Composite.allBodies(world).filter((b) => b.plugin && b.plugin.cm);
+
+  /* ---------- 월드 구성 ---------- */
+  function buildWorld() {
+    engine = Engine.create({ enableSleeping: false });
+    engine.gravity.y = CONFIG.physics.gravityY;
+    engine.positionIterations = 8;
+    engine.velocityIterations = 6;
+    world = engine.world;
+    const w = B.wall, h = B.bottom - B.top + 400;
+    const opt = { isStatic: true, friction: 0.5, restitution: 0.05 };
+    Composite.add(world, [
+      Bodies.rectangle(B.left - w / 2, B.bottom - h / 2, w, h, opt),
+      Bodies.rectangle(B.right + w / 2, B.bottom - h / 2, w, h, opt),
+      Bodies.rectangle((B.left + B.right) / 2, B.bottom + w / 2, B.right - B.left + w * 2, w, opt),
+    ]);
+    Events.on(engine, 'collisionStart', onCollision);
+    Events.on(engine, 'collisionActive', onCollision);
+  }
+
+  /* ---------- 단계별 모양 (그림 윤곽 → 충돌 다각형) ----------
+   * k       : 원본 이미지 1px 이 스테이지 몇 px 인지
+   * verts   : 충돌 다각형 (스테이지 px, 이미지 중심 기준) / null 이면 원
+   * imgSize : 이미지를 그릴 크기 (정사각)
+   * offset  : 물리 중심(무게중심) → 이미지 중심까지 거리 (몸체 로컬 좌표)
+   * halfW / halfH : 회전 전 반폭/반높이 (드로퍼 위치 제한, 연출용)
+   */
+  const shapeCache = [];
+  function shapeOf(tierIndex) {
+    if (shapeCache[tierIndex]) return shapeCache[tierIndex];
+    const t = CONFIG.tiers[tierIndex];
+    const r = t.radius * (t.sizeScale || 1) * (CONFIG.shapes.gameScale || 1);
+    const S = (typeof SHAPES !== 'undefined') && SHAPES[t.id];
+    let shape;
+    if (CONFIG.shapes.mode === 'outline' && S && !Assets.isPlaceholder(tierIndex)) {
+      const k = Math.sqrt((Math.PI * r * r * CONFIG.shapes.fill) / S.area);
+      const verts = S.verts.map(([x, y]) => ({ x: x * k, y: y * k }));
+      const c = Matter.Vertices.centre(verts);
+      shape = {
+        k, verts, imgSize: S.src * k,
+        offset: { x: -c.x, y: -c.y },
+        halfW: (S.width * k) / 2, halfH: (S.height * k) / 2,
+      };
+    } else {
+      // 원형 (플레이스홀더 또는 circle 모드): 그림 내용 폭 ≈ 지름
+      const src = S ? S.src : 512;
+      const contentW = S ? Math.max(S.width, S.height) : src * 0.85;
+      const k = (r * 2.08) / contentW;
+      shape = { k, verts: null, r, imgSize: src * k, offset: { x: 0, y: 0 }, halfW: r, halfH: r };
+    }
+    return (shapeCache[tierIndex] = shape);
+  }
+
+  function createObject(tierIndex, x, y, { spawned = false } = {}) {
+    const p = CONFIG.physics;
+    const sh = shapeOf(tierIndex);
+    const opts = {
+      restitution: p.restitution, friction: p.friction, frictionStatic: p.frictionStatic,
+      frictionAir: p.frictionAir, density: p.density,
+    };
+    const body = sh.verts
+      ? Bodies.fromVertices(x, y, [sh.verts], opts)
+      : Bodies.circle(x, y, sh.r, opts);
+    // fromVertices 는 무게중심을 (x, y)에 둠 → 이미지 중심이 (x, y)에 오도록 보정
+    if (sh.verts) Body.setPosition(body, { x: x - sh.offset.x, y: y - sh.offset.y });
+    body.plugin = { cm: {
+      tier: tierIndex, born: now, merging: false,
+      falling: !spawned,            // 드롭 직후 첫 충돌 전까지 true
+      squash: 0,                    // 착지 찌그러짐 (0~1)
+      pop: spawned ? 0 : 1,         // 합체 생성 팝업 애니메이션 진행도
+    } };
+    Composite.add(world, body);
+    return body;
+  }
+
+  /* ---------- 충돌 / 합체 ---------- */
+  function onCollision(e) {
+    for (const pair of e.pairs) {
+      const a = pair.bodyA.parent, b = pair.bodyB.parent;
+      const ma = a.plugin && a.plugin.cm, mb = b.plugin && b.plugin.cm;
+
+      // 착지 연출 (드롭 후 첫 충돌)
+      for (const [body, m] of [[a, ma], [b, mb]]) {
+        if (m && m.falling && e.name === 'collisionStart') {
+          m.falling = false;
+          const speed = Math.min(body.speed, 14);
+          m.squash = Math.min(0.22, speed / 50);
+          if (speed > 3) {
+            Effects.dust(body.position.x, body.bounds.max.y, shapeOf(m.tier).halfW);
+            Sound.play('land', { pitch: 1.3 - m.tier * 0.05 });
+          }
+        }
+      }
+      // 같은 단계끼리 합체
+      if (ma && mb && ma.tier === mb.tier && !ma.merging && !mb.merging) {
+        ma.merging = mb.merging = true;
+        mergeQueue.push([a, b]);
+      }
+    }
+  }
+
+  function processMerges() {
+    for (const [a, b] of mergeQueue) {
+      const tier = meta(a).tier;
+      const x = (a.position.x + b.position.x) / 2;
+      const y = (a.position.y + b.position.y) / 2;
+      Composite.remove(world, [a, b]);
+
+      if (tier === CONFIG.tiers.length - 1) {
+        // 최종 단계 + 최종 단계 → 둘 다 사라지고 보너스
+        addScore(CONFIG.maxMergeBonus, x, y, '#ff7eb6');
+        Effects.mergeBurst(x, y, CONFIG.tiers[tier].radius * 1.4, tier);
+        Sound.play('mergeBig');
+        continue;
+      }
+      const nt = tier + 1;
+      const nb = createObject(nt, x, y, { spawned: true });
+      Body.setVelocity(nb, {
+        x: (a.velocity.x + b.velocity.x) / 2,
+        y: Math.min((a.velocity.y + b.velocity.y) / 2, 0) - 1,
+      });
+      addScore(CONFIG.tiers[nt].score, x, y);
+      Effects.mergeBurst(x, y, CONFIG.tiers[nt].radius, nt);
+      Sound.play(nt >= 7 ? 'mergeBig' : 'merge', { pitch: 1.4 - nt * 0.06 });
+      Store.get().stats.merges++;
+
+      Store.addCount(nt);
+      if (Store.discover(nt) && cb.onDiscover) cb.onDiscover(nt);
+      if (nt > maxTier) { maxTier = nt; cb.onMaxTier && cb.onMaxTier(maxTier); }
+    }
+    mergeQueue = [];
+  }
+
+  function addScore(v, x, y, color) {
+    score += v;
+    Effects.floatText(x, y - 10, `+${v}`, color);
+    cb.onScore && cb.onScore(score);
+  }
+
+  /* ---------- 게임오버 판정 ---------- */
+  function checkDanger() {
+    let over = false;
+    for (const b of objects()) {
+      const m = meta(b);
+      if (m.merging || now - m.born < B.spawnGraceMs) continue;
+      if (b.bounds.min.y < B.dangerY && b.speed < 2.5) { over = true; break; }
+    }
+    if (over) {
+      if (dangerSince === null) dangerSince = now;
+      if (now - dangerSince >= B.dangerHoldMs) endGame();
+    } else dangerSince = null;
+  }
+
+  function endGame() {
+    if (state !== 'playing') return;
+    state = 'over';
+    overAnim = 0;
+    Sound.stopBgm(0.5);
+    Sound.play('gameover');
+    const result = { score, maxTier };
+    setTimeout(() => cb.onGameOver && cb.onGameOver(result), 1100);
+  }
+
+  /* ---------- 입력 ---------- */
+  function clampX(x) {
+    const r = shapeOf(currentTier).halfW;
+    return Math.max(B.left + r + 1, Math.min(B.right - r - 1, x));
+  }
+  function setPointerX(x) { pointerX = x; }
+  function nudge(dx) { pointerX = clampX(pointerX + dx); }
+  function canDrop() { return state === 'playing' && now - lastDropAt >= CONFIG.drop.cooldownMs; }
+
+  function drop() {
+    if (!canDrop()) return false;
+    const b = createObject(currentTier, clampX(pointerX), dropYFor(currentTier));
+    meta(b).falling = true;
+    Store.addCount(meta(b).tier);
+    if (Store.discover(meta(b).tier) && cb.onSeen) cb.onSeen(meta(b).tier);   // 1~5단계는 떨어뜨리기만 해도 도감에 등록 (알림 없이)
+    Body.setVelocity(b, { x: 0, y: 2 });
+    lastDropAt = now;
+    Sound.play('drop');
+    currentTier = nextTier;
+    nextTier = pickSpawnTier();
+    cb.onNext && cb.onNext(currentTier, nextTier);
+    return true;
+  }
+
+  /* ---------- 렌더 ---------- */
+  /* 유리 상자 프레임 배치: 이미지의 안쪽 벽/바닥선이 물리 벽/바닥과 정확히 겹치도록 균일 스케일 */
+  function frameLayout() {
+    const fa = B.frameArt;
+    const k = (B.right - B.left) / (fa.innerRight - fa.innerLeft);
+    return { k, x: B.left - fa.innerLeft * k, y: B.bottom - fa.innerBottom * k };
+  }
+
+  /* 드로퍼 (dropper.png): 포인터를 따라다니며 다음 오브젝트를 들고 있는 그림 */
+  function holderLayout() {
+    const d = Assets.dropper();
+    if (!d) return null;
+    const s = B.holder.scale;
+    return { cloud: d.img, s, w: d.img.width * s, h: d.img.height * s, top: B.holder.top,
+             bottom: B.holder.top + d.visibleBottom * s };
+  }
+
+  /** 드로퍼에 매달린 오브젝트의 중심 y (구름 아래에 살짝 겹쳐 매달림) */
+  function dropYFor(tierIndex) {
+    const h = holderLayout();
+    if (!h) return B.dropY;
+    return h.bottom - B.holder.overlap + shapeOf(tierIndex).halfH;
+  }
+
+  function drawBox() {
+    if (B.drawFrame === false) return;   // 플레이 v3.8: 유리 상자가 배경 스킨에 그려져 있음
+    const img = Assets.image('box');
+    if (img) {
+      const f = frameLayout();
+      g.drawImage(img, f.x, f.y, img.width * f.k, img.height * f.k);
+      return;
+    }
+    // 유리 상자 (플레이스홀더)
+    g.save();
+    g.fillStyle = 'rgba(255, 255, 255, 0.10)';
+    g.fillRect(B.left, B.top - 40, B.right - B.left, B.bottom - B.top + 40);
+    g.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+    g.lineWidth = 5;
+    g.beginPath();
+    g.moveTo(B.left - 2, B.top - 40); g.lineTo(B.left - 2, B.bottom + 2);
+    g.lineTo(B.right + 2, B.bottom + 2); g.lineTo(B.right + 2, B.top - 40);
+    g.stroke();
+    // 유리 반사 하이라이트
+    g.fillStyle = 'rgba(255,255,255,0.18)';
+    g.fillRect(B.left + 10, B.top - 30, 10, B.bottom - B.top);
+    // 받침대
+    g.fillStyle = 'rgba(170, 150, 230, 0.9)';
+    g.beginPath(); g.roundRect(B.left - 16, B.bottom + 4, B.right - B.left + 32, 16, 8); g.fill();
+    g.restore();
+  }
+
+  function drawDangerLine() {
+    const active = dangerSince !== null;
+    const pulse = active ? 0.5 + 0.5 * Math.sin(now / 90) : 0;
+    g.save();
+    g.setLineDash([10, 8]);
+    g.lineWidth = active ? 3 : 2;
+    g.strokeStyle = active ? `rgba(255, 90, 120, ${0.6 + pulse * 0.4})` : 'rgba(255,255,255,0.45)';
+    g.beginPath(); g.moveTo(B.left, B.dangerY); g.lineTo(B.right, B.dangerY); g.stroke();
+    g.restore();
+  }
+
+  /** (x, y) = 물리 중심. offset 으로 이미지 중심을 맞춰 그림 */
+  function drawSprite(tierIndex, x, y, angle, sx = 1, sy = 1, alpha = 1, useOffset = true) {
+    const sh = shapeOf(tierIndex);
+    const s = sh.imgSize;
+    const ox = useOffset ? sh.offset.x : 0, oy = useOffset ? sh.offset.y : 0;
+    g.save();
+    g.globalAlpha = alpha;
+    g.translate(x, y);
+    g.scale(sx, sy);
+    g.rotate(angle);
+    g.drawImage(Assets.getSprite(tierIndex), ox - s / 2, oy - s / 2, s, s);
+    if (debugShapes && sh.verts) {
+      g.strokeStyle = 'rgba(255,60,120,0.9)'; g.lineWidth = 1.5;
+      g.beginPath(); sh.verts.forEach((v, i) => g[i ? 'lineTo' : 'moveTo'](v.x + ox, v.y + oy)); g.closePath(); g.stroke();
+    }
+    g.restore();
+  }
+
+  function easeOutBack(t) { const c = 1.70158; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); }
+  function drawDropper() {
+    if (state !== 'playing') return;
+    const x = clampX(pointerX);
+    const ready = canDrop();
+    const y = dropYFor(currentTier);
+    if (Store.get().settings.guide) {
+      g.save();
+      g.strokeStyle = 'rgba(255,255,255,0.35)';
+      g.setLineDash([4, 10]); g.lineWidth = 2;
+      g.beginPath(); g.moveTo(x, y + shapeOf(currentTier).halfH); g.lineTo(x, B.bottom); g.stroke();
+      g.restore();
+    }
+    const bob = Math.sin(now / 300) * 3;
+    // 새로 매달린 가구가 눈에 띄도록: 떨어뜨린 직후(쿨다운 동안) 구름 아래에서 톡 커지며 나타남.
+    //  - 크기 0.55 → 1 (살짝 튀었다 자리잡음), 위쪽(구름에 매달린 쪽) 기준으로 커짐
+    //  - 쿨다운 중 투명도 0.8 (예전 0.45 는 너무 흐려서 다음 가구가 안 보였음)
+    const t = Math.min(1, (now - lastDropAt) / CONFIG.drop.cooldownMs);
+    const pop = t >= 1 ? 1 : 0.55 + 0.45 * easeOutBack(t);
+    const hh = shapeOf(currentTier).halfH;
+    drawSprite(currentTier, x, y + bob - hh * (1 - pop), 0, pop, pop, ready ? 1 : 0.8, false);
+    // 오브젝트를 들고 있는 구름 (오브젝트 윗부분을 살짝 덮음)
+    const h = holderLayout();
+    if (h) g.drawImage(h.cloud, x - h.w / 2, h.top + bob, h.w, h.h);
+  }
+
+  function drawObjects() {
+    const list = objects().sort((a, b) => meta(a).tier - meta(b).tier);
+    for (const b of list) {
+      const m = meta(b);
+      // 떨어질 때 속도선
+      if (m.falling && b.speed > 4) {
+        g.save();
+        g.strokeStyle = 'rgba(255,255,255,0.5)'; g.lineWidth = 2;
+        for (const dx of [-0.5, 0, 0.5]) {
+          const lx = b.position.x + dx * shapeOf(m.tier).halfW;
+          g.beginPath();
+          g.moveTo(lx, b.bounds.min.y - 6);
+          g.lineTo(lx, b.bounds.min.y - 6 - b.speed * 2.5);
+          g.stroke();
+        }
+        g.restore();
+      }
+      const sq = m.squash;
+      const pop = m.pop < 1 ? 0.6 + 0.4 * easeOutBack(m.pop) : 1;
+      // 착지 찌그러짐은 아래쪽 기준
+      const sy = (1 - sq) * pop, sx = (1 + sq) * pop;
+      const yOff = (b.bounds.max.y - b.position.y) * sq;
+      const dim = state === 'over' ? 1 - Math.min(overAnim, 1) * 0.35 : 1;
+      drawSprite(m.tier, b.position.x, b.position.y + yOff, b.angle, sx, sy, dim);
+    }
+  }
+
+  function easeOutBack(t) { const c = 1.7; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); }
+
+  function render() {
+    g.clearRect(0, 0, canvas.width, canvas.height);
+    drawBox();
+    drawDangerLine();
+    drawObjects();
+    drawDropper();
+    Effects.draw(g);
+    if (slotMode) drawSlots();
+  }
+
+  /* ---------- 이미지 자리 표시 (아트 확인용) ---------- */
+  function slotTag(text, x, y, color = 'rgba(255,61,154,0.92)') {
+    g.save();
+    g.font = '12px sans-serif';
+    const w = g.measureText(text).width + 12;
+    g.fillStyle = color; g.fillRect(x, y, w, 18);
+    g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.fillText(text, x + 6, y + 9.5);
+    g.restore();
+  }
+  function slotRect(x, y, w, h, color = '#ff3d9a') {
+    g.save(); g.setLineDash([6, 4]); g.lineWidth = 2; g.strokeStyle = color; g.strokeRect(x, y, w, h); g.restore();
+  }
+  function drawSlots() {
+    // 유리 상자: 이미지 전체 자리 + 안쪽 벽·바닥 기준선
+    const f = frameLayout(), fa = B.frameArt;
+    const img = Assets.image('box');
+    const bw = img ? img.width : 520, bh = img ? img.height : 620;
+    slotRect(f.x, f.y, bw * f.k, bh * f.k);
+    g.save(); g.strokeStyle = 'rgba(24,198,224,0.95)'; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(B.left, B.top - 40); g.lineTo(B.left, B.bottom); g.lineTo(B.right, B.bottom); g.lineTo(B.right, B.top - 40); g.stroke(); g.restore();
+    slotTag(`glass_box.png · ${bw}×${bh}  (안쪽 벽 x${fa.innerLeft}·x${fa.innerRight}, 바닥 y${fa.innerBottom} → 하늘색 선)`, f.x, f.y + bh * f.k + 2);
+    slotTag('게임오버 선 (코드로 그림, 이미지 아님)', B.left + 4, B.dangerY + 3, 'rgba(90,80,140,0.9)');
+    // 드로퍼
+    if (state === 'playing' || state === 'paused') {
+      const d = Assets.dropper(), s = B.holder.scale;
+      const dw = (d ? d.img.width : 360) * s, dh = (d ? d.img.height : 180) * s;
+      const x = clampX(pointerX);
+      slotRect(x - dw / 2, B.holder.top, dw, dh);
+      slotTag(`dropper.png · ${d ? d.img.width : 360}×${d ? d.img.height : 180}`, x - dw / 2, B.holder.top + dh + 2);
+    }
+    // 오브젝트: 이미지 자리(정사각) + 파일명 (같은 단계는 하나에만 이름표)
+    const tagged = new Set();
+    for (const b of objects()) {
+      const m = meta(b), sh = shapeOf(m.tier), t = CONFIG.tiers[m.tier];
+      const cx = b.position.x + sh.offset.x, cy = b.position.y + sh.offset.y;
+      g.save(); g.globalAlpha = 0.45; slotRect(cx - sh.imgSize / 2, cy - sh.imgSize / 2, sh.imgSize, sh.imgSize); g.restore();
+      if (tagged.has(m.tier)) continue;
+      tagged.add(m.tier);
+      slotTag(`obj_${String(t.id).padStart(2, '0')} · 512×512 → 화면 ${Math.round(sh.imgSize)}`, cx - sh.imgSize / 2, cy - sh.imgSize / 2 - 18);
+    }
+  }
+
+  /* ---------- 루프 ---------- */
+  function tick(ts) {
+    rafId = requestAnimationFrame(tick);
+    const dt = Math.min(ts - (lastFrame || ts), 100);
+    lastFrame = ts;
+    if (state === 'playing') {
+      acc += dt;
+      while (acc >= STEP) {
+        now += STEP;
+        Engine.update(engine, STEP);
+        processMerges();
+        acc -= STEP;
+      }
+      for (const b of objects()) {
+        const m = meta(b);
+        m.squash *= 0.82;
+        if (m.pop < 1) m.pop = Math.min(1, m.pop + dt / 220);
+      }
+      checkDanger();
+      Effects.update(dt / 1000);
+    } else if (state === 'over') {
+      overAnim += dt / 1000;
+      Effects.update(dt / 1000);
+    }
+    render();
+  }
+
+  /* ---------- 공개 API ---------- */
+  function init(cv, callbacks) {
+    canvas = cv; g = canvas.getContext('2d'); cb = callbacks || {};
+  }
+
+  function start() {
+    if (engine) { Events.off(engine); Composite.clear(engine.world, false); Engine.clear(engine); }
+    buildWorld();
+    Effects.clear();
+    state = 'playing';
+    score = 0; maxTier = 0; now = 0; acc = 0; lastDropAt = -9999;
+    mergeQueue = []; dangerSince = null;
+    currentTier = pickSpawnTier(); nextTier = pickSpawnTier();
+    cb.onScore && cb.onScore(0);
+    cb.onNext && cb.onNext(currentTier, nextTier);
+    cb.onMaxTier && cb.onMaxTier(0);
+    if (!rafId) { lastFrame = 0; rafId = requestAnimationFrame(tick); }
+  }
+
+  function pause()  { if (state === 'playing') state = 'paused'; }
+  function resume() { if (state === 'paused') { state = 'playing'; lastFrame = 0; } }
+  function stop()   { state = 'idle'; if (rafId) cancelAnimationFrame(rafId); rafId = null; }
+
+  return {
+    init, start, pause, resume, stop, drop, setPointerX, nudge,
+    get state() { return state; },
+    get score() { return score; },
+    // 디버그/테스트용
+    _debugSpawn: (tier, x, y) => createObject(tier, x, y, { spawned: true }),
+    _bodies: () => (world ? objects().map((b) => ({ tier: meta(b).tier + 1, x: Math.round(b.position.x), y: Math.round(b.position.y) })) : []),
+    debugShapes: (on) => { debugShapes = !!on; },
+    setSlots: (on) => { slotMode = !!on; },
+    /** 단계별 화면 크기 (도감 상세 표시용): 그림 윤곽 기준 폭×높이 */
+    sizeOf: (tierIndex) => { const sh = shapeOf(tierIndex); return { w: Math.round(sh.halfW * 2), h: Math.round(sh.halfH * 2) }; },
+  };
+})();
+
+</script>
+<script>
+/* =========================================================
+ * 화면 진행 (Screen Flow) + HUD   — v1.0 (승인 시안 배치)
+ *
+ *  loading → title ─┬─ start ──→ game ──(pause)──→ [일시정지: 계속 / 다시 / 옵션 / 타이틀로]
+ *                   ├─ codex (도감)
+ *                   ├─ settings (옵션)
+ *                   └─ ranking (랭킹)
+ *            game ──(게임오버)──→ gameover ─┬ 닉네임 입력 → 랭킹 등록
+ *                                            ├ home → title
+ *                                            ├ retry → game
+ *                                            └ ranking → (닫기) gameover
+ * ========================================================= */
+const UI = (() => {
+  const $ = (id) => document.getElementById(id);
+  let current = 'loading';
+  let returnTo = 'title';     // 도감/옵션/랭킹에서 '닫기' 로 돌아갈 곳
+  let lastResult = null;
+  let toastTimer = null;
+  let lastMax = 0;
+  let rankTab = 'all';
+
+  const SCREENS = ['loading', 'title', 'game', 'gameover', 'codex', 'settings', 'ranking'];
+
+  /* ---------- 화면 전환 ---------- */
+  function show(name) {
+    for (const s of SCREENS) $('screen-' + s).classList.toggle('active', s === name);
+    current = name;
+    if (name === 'title') $('title-best').textContent = Store.get().best.toLocaleString();
+    if (name === 'codex') renderCodex();
+    if (name === 'settings') renderSettings();
+    if (name === 'ranking') renderRanking();
+  }
+  function showOverlay(on) { $('overlay-pause').classList.toggle('active', on); }
+
+  /* ---------- 게임 안 확인 창 (브라우저 confirm 대신: OBS 브라우저 소스에서는 confirm 이 안 뜰 수 있음) ---------- */
+  function confirmDialog(title, text, okLabel = '확인') {
+    return new Promise((resolve) => {
+      const ov = $('overlay-confirm');
+      $('confirm-title').textContent = title;
+      $('confirm-text').textContent = text;
+      $('confirm-yes').textContent = okLabel;
+      ov.classList.add('active');
+      const done = (v) => {
+        ov.classList.remove('active');
+        $('confirm-yes').onclick = $('confirm-no').onclick = null;
+        window.removeEventListener('keydown', onKey, true);
+        Sound.play('click');
+        resolve(v);
+      };
+      const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); done(false); } };
+      $('confirm-yes').onclick = () => done(true);
+      $('confirm-no').onclick = () => done(false);
+      window.addEventListener('keydown', onKey, true);
+    });
+  }
+
+  /* ---------- 액션 (data-action 버튼) ---------- */
+  const actions = {
+    start()   { startGame(); },
+    retry()   { showOverlay(false); startGame(); },
+    pause()   { if (Game.state === 'playing') { Game.pause(); Sound.pauseBgm(); showOverlay(true); } },
+    resume()  { showOverlay(false); Game.resume(); Sound.resumeBgm(); },
+    home()    { showOverlay(false); Game.stop(); Sound.stopBgm(); show('title'); },
+    codex()   { returnTo = current; show('codex'); },
+    settings(){
+      // 일시정지 중 옵션 → 닫으면 일시정지 화면으로
+      returnTo = current === 'game' ? 'pause' : current;
+      showOverlay(false); show('settings');
+    },
+    ranking() { returnTo = current; rankTab = 'all'; show('ranking'); },
+    back() {
+      if (returnTo === 'pause') { show('game'); showOverlay(true); }
+      else show(returnTo || 'title');
+    },
+    async 'reset-data'() {
+      const ok = await confirmDialog('기록 초기화', '최고 점수, 도감, 랭킹 기록을\n모두 지울까요?\n(옵션 설정은 유지돼요)', '지우기');
+      if (!ok) return;
+      const settings = { ...Store.get().settings };
+      Store.reset();
+      Object.assign(Store.get().settings, settings); Store.save();
+      lastResult = null;
+      renderSettings();
+      toast('기록을 모두 지웠어요');
+    },
+  };
+
+  function bindActions() {
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const fn = actions[btn.dataset.action];
+      if (fn) { Sound.unlock(); Sound.play('click'); fn(); }
+    });
+    document.querySelectorAll('.rank-tab').forEach((b) => {
+      b.addEventListener('click', () => { Sound.play('click'); rankTab = b.dataset.tab; renderRanking(); });
+    });
+  }
+
+  function startGame() {
+    show('game');
+    Sound.startBgm();
+    Game.start();
+  }
+
+  /* ---------- HUD ---------- */
+  function buildEvoList() {
+    const ul = $('hud-evo');
+    ul.innerHTML = '';
+    for (let i = 0; i < CONFIG.tiers.length; i++) {       // 시안: 위가 1단계, 아래가 11단계
+      const li = document.createElement('li');
+      li.dataset.tier = i;
+      const n = document.createElement('span'); n.className = 'evo-num'; n.textContent = CONFIG.tiers[i].id;
+      li.append(n, Assets.thumbnail(i, 36));
+      ul.appendChild(li);
+    }
+  }
+
+  function setScore(v) {
+    const el = $('hud-score');
+    Digits.set(el, v);
+    el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+  }
+
+  function setNext(cur, next) {
+    const slot = $('hud-next');
+    slot.innerHTML = '';
+    slot.appendChild(Assets.thumbnail(next, 110));
+  }
+
+  function setMaxTier(maxTier) {
+    lastMax = maxTier;
+    Digits.set($('hud-best'), Store.get().best);
+    refreshEvo();
+  }
+  function refreshEvo() {
+    const disc = Store.get().discovered;
+    for (const li of $('hud-evo').children) {
+      const i = +li.dataset.tier;
+      li.classList.toggle('current', Game.state !== 'idle' && i === lastMax);
+      li.classList.toggle('reached', i < lastMax);
+      li.classList.toggle('locked', !disc[i]);
+    }
+  }
+
+  function toast(content, ms = 1800) {
+    const t = $('toast');
+    t.innerHTML = '';
+    if (content instanceof Node) t.appendChild(content); else t.textContent = content;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+  }
+
+  function onDiscover(tierIndex) {
+    const wrap = document.createElement('span');
+    wrap.style.display = 'flex'; wrap.style.alignItems = 'center'; wrap.style.gap = '10px';
+    wrap.appendChild(Assets.thumbnail(tierIndex, 36));
+    const txt = document.createElement('span'); txt.innerHTML = '새로운 발견!<br>'; txt.appendChild(document.createTextNode(CONFIG.tiers[tierIndex].name));
+    wrap.appendChild(txt);
+    toast(wrap);
+    refreshEvo();
+  }
+  function onSeen() { refreshEvo(); }   // 떨어뜨려서 처음 본 단계 (알림 없이 도감·진화도만 갱신)
+
+  /* ---------- 03 게임 종료 ---------- */
+  function onGameOver({ score, maxTier }) {
+    const { isNewBest, rank } = Store.finishGame(score, maxTier);
+    lastResult = { score, maxTier, rank: null, registered: false };
+    show('gameover');                              // 먼저 보이게 해야 숫자 크기를 계산할 수 있음
+    Digits.set($('go-score'), score);
+    $('go-best').textContent = Store.get().best.toLocaleString();
+    $('go-new').classList.toggle('show', isNewBest);
+    $('go-bubble').classList.toggle('show', isNewBest && score > 0);
+    const tierEl = $('go-tier');
+    tierEl.innerHTML = '';
+    tierEl.appendChild(Assets.thumbnail(maxTier, 34));
+    tierEl.appendChild(document.createTextNode(`최고 진화: ${CONFIG.tiers[maxTier].name}`));
+    setRegisterState(rank ? 'open' : (score > 0 ? 'out' : 'zero'), rank);
+    Sound.stopBgm();
+    if (rank) setTimeout(() => { const n = $('go-name'); n.focus(); n.select(); }, 250);
+  }
+
+  /* ---------- 랭킹 등록 ---------- */
+  // state: open(입력 가능) / done(등록 완료) / out(보관 한도 밖) / zero(0점 → 영역 숨김)
+  function setRegisterState(state, rank) {
+    const msg = $('go-rank-msg'), row = $('go-rank-row');
+    $('go-register').dataset.state = state;
+    row.style.display = state === 'open' ? '' : 'none';
+    msg.classList.remove('warn');
+    if (state === 'open') {
+      msg.textContent = rank <= Store.RANK_SIZE ? `${rank}위 기록이에요! 닉네임을 입력하고 랭킹에 등록하세요` : `${rank}위 기록이에요. 닉네임을 입력하고 등록하세요`;
+      $('go-name').value = Store.get().lastName || '';
+      $('go-submit').disabled = false;
+    } else if (state === 'done') {
+      msg.textContent = `랭킹 ${rank}위로 등록했어요!`;
+    } else if (state === 'out') {
+      msg.textContent = '랭킹에 등록할 수 없는 점수예요';
+    } else {
+      msg.textContent = '';
+    }
+  }
+
+  function bindRegister() {
+    $('go-register').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!lastResult || lastResult.registered) return;
+      const input = $('go-name');
+      if (!Store.cleanName(input.value)) {
+        const msg = $('go-rank-msg');
+        msg.textContent = '닉네임을 입력해 주세요';
+        msg.classList.add('warn');
+        input.classList.remove('shake'); void input.offsetWidth; input.classList.add('shake');
+        input.focus();
+        return;
+      }
+      const rank = Store.registerRank(input.value, lastResult.score, lastResult.maxTier);
+      if (!rank) { setRegisterState('out'); return; }
+      Sound.play('click');
+      lastResult.registered = true; lastResult.rank = rank;
+      $('go-submit').disabled = true;
+      input.blur();
+      setRegisterState('done', rank);
+    });
+  }
+
+  /* ---------- 05 도감 ---------- */
+  function renderCodex(selected) {
+    const grid = $('codex-grid');
+    const st = Store.get(), disc = st.discovered, counts = st.counts || [];
+    grid.innerHTML = '';
+    const count = disc.filter(Boolean).length;
+    $('codex-count').textContent = `${count} / ${CONFIG.tiers.length}`;
+    if (selected === undefined) selected = Math.max(0, disc.lastIndexOf(true));
+    CONFIG.tiers.forEach((t, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'codex-cell' + (disc[i] ? '' : ' locked') + (i === selected ? ' selected' : '');
+      const num = document.createElement('span'); num.className = 'num'; num.textContent = t.id;
+      const name = document.createElement('span'); name.className = 'name'; name.textContent = disc[i] ? shortName(t) : '???';
+      const v25 = Assets.kit('codex25');   // 도감 v2.5: 칸 안 그림 영역 110×91, 못 찾은 칸은 받은 실루엣 그림
+      const pic = disc[i] ? Assets.thumbnail(i, v25 ? 91 : 70) : (v25 ? silhouette() : lockIcon(42));   // 못 찾은 칸: 받은 자물쇠 아이콘 (그림을 검게 칠하지 않음)
+      cell.append(num, pic, name);
+      cell.onclick = () => { Sound.play('click'); renderCodex(i); };
+      grid.appendChild(cell);
+    });
+    const t = CONFIG.tiers[selected];
+    const d = $('codex-detail');
+    d.innerHTML = '';
+    const box = document.createElement('div'); box.className = 'd-img';
+    const big = Assets.kit('codex25') ? 200 : 150;   // v2.5: 상세 그림 최대 290×200
+    box.appendChild(disc[selected] ? Assets.thumbnail(selected, big) : (Assets.kit('codex25') ? silhouette('big') : lockIcon(72)));
+    const info = document.createElement('div');
+    if (disc[selected]) {
+      const sz = Game.sizeOf(selected);
+      const from = selected > 0 ? `${CONFIG.tiers[selected - 1].name} 2개를 합쳐서 탄생` : '처음부터 떨어지는 가구';
+      info.innerHTML = `<div class="d-name"></div><div class="d-size"></div><div class="d-desc"></div>
+        <div class="d-meta"><span class="chip">획득 개수<b></b></span><span class="chip">만들면<b></b></span><span class="chip from"></span></div>`;
+      info.querySelector('.d-name').textContent = `${t.id}. ${shortName(t)}`;
+      info.querySelector('.d-size').textContent = `${sz.w} × ${sz.h}`;
+      info.querySelector('.d-desc').textContent = t.desc || '';
+      const chips = info.querySelectorAll('.chip b');
+      chips[0].textContent = (counts[selected] || 0).toLocaleString();
+      chips[1].textContent = `+${t.score}점`;
+      info.querySelector('.chip.from').textContent = from;
+    } else {
+      info.innerHTML = `<div class="d-name">${t.id}. ???</div><div class="d-desc">아직 발견하지 못했어요. ${selected > 0 ? '아래 단계 가구 2개를 합쳐 보세요!' : ''}</div>`;
+    }
+    d.append(box, info);
+  }
+  const shortName = (t) => t.name.replace(/^구름\s*/, '');
+  function silhouette(cls = '') { const img = new Image(); img.alt = ''; img.className = 'codex-sil ' + cls; const p = 'assets/codex/codex_locked_silhouette.png'; img.src = (window.__ASSET_DATA && window.__ASSET_DATA[p]) || p; return img; }
+  function lockIcon(px) { const w = document.createElement('span'); w.innerHTML = '<i data-ico="lock" class="lock-ico"></i>'; Icons.apply(w); const i = w.firstChild; i.style.width = i.style.height = px + 'px'; return i; }   // 시안 표기: '조각', '침대' …
+
+  /* ---------- 04 옵션 ---------- */
+  function renderSettings() {
+    const s = Store.get().settings;
+    const bgm = $('set-bgm'), sfx = $('set-sfx'), guide = $('set-guide');
+    bgm.value = s.bgm; sfx.value = s.sfx; guide.checked = s.guide;
+    bgm.oninput = () => { s.bgm = +bgm.value; Sound.updateVolume(); Store.save(); };
+    sfx.oninput = () => { s.sfx = +sfx.value; Sound.updateVolume(); Store.save(); };
+    sfx.onchange = () => Sound.play('merge');
+    guide.onchange = () => { s.guide = guide.checked; Store.save(); };
+  }
+
+  /* ---------- 06 랭킹 ---------- */
+  function rankRow(r, pos, { latest = false } = {}) {
+    const li = document.createElement('li');
+    li.className = (latest ? 'latest ' : '') + (pos <= 3 ? `top r${pos}` : '');   // v2.8: 1~3위 행 그림
+    const badge = document.createElement('span'); badge.className = 'rank-badge' + (pos <= 3 ? ` r${pos}` : ''); badge.textContent = pos;
+    const av = document.createElement('span'); av.className = 'rank-avatar'; av.appendChild(Assets.thumbnail(r.maxTier ?? 0, 32));
+    av.title = `최고 진화: ${CONFIG.tiers[r.maxTier ?? 0].name}`;
+    const name = document.createElement('span'); name.className = 'name'; name.textContent = r.name || '-';
+    const sc = document.createElement('span'); sc.className = 'score num'; sc.dataset.num = 'purple';
+    const date = document.createElement('span'); date.className = 'date'; date.textContent = (r.date || '').replace(/-/g, '.');
+    li.append(badge, av, name, sc, date);
+    return { li, sc, score: r.score };
+  }
+
+  function renderRanking() {
+    document.querySelectorAll('.rank-tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === rankTab));
+    const ol = $('ranking-list');
+    const st = Store.get();
+    const me = st.lastName;
+    ol.innerHTML = '';
+    const nums = [];
+    let rows;
+    if (rankTab === 'all') rows = st.ranking.slice(0, Store.RANK_SIZE).map((r, i) => ({ r, pos: i + 1 }));
+    else rows = Store.recordsOf(me).slice(0, Store.RANK_SIZE).map((r) => ({ r, pos: r.rank }));
+    if (!rows.length) {
+      ol.innerHTML = `<div class="ranking-empty">${rankTab === 'all' ? '아직 등록된 기록이 없어요' : (me ? `'${escapeHtml(me)}' 이름의 기록이 없어요` : '게임이 끝난 뒤 닉네임을 등록하면<br>내 기록이 여기에 모여요')}</div>`;
+    }
+    for (const { r, pos } of rows) {
+      const latest = lastResult && lastResult.registered && lastResult.rank === pos;
+      const row = rankRow(r, pos, { latest });
+      ol.appendChild(row.li); nums.push(row);
+    }
+    // 내 순위 (전체 랭킹 탭 아래 고정): 내 닉네임의 최고 기록
+    const my = $('my-rank');
+    my.innerHTML = '';
+    const mine = Store.recordsOf(me);
+    if (rankTab === 'all' && me) {
+      my.classList.add('show');
+      const lab = document.createElement('span'); lab.className = 'my-label'; lab.textContent = '내 순위';
+      if (mine.length) {
+        const b = mine[0];
+        const pos = document.createElement('span'); pos.className = 'my-pos'; pos.textContent = b.rank;
+        const name = document.createElement('span'); name.className = 'name'; name.textContent = b.name;
+        const sc = document.createElement('span'); sc.className = 'score num'; sc.dataset.num = 'gold';
+        const date = document.createElement('span'); date.className = 'date'; date.textContent = (b.date || '').replace(/-/g, '.');
+        my.append(lab, pos, name, sc, date);
+        nums.push({ sc, score: b.score });
+      } else {
+        const hint = document.createElement('span'); hint.className = 'hint'; hint.textContent = `'${me}' 이름으로 등록된 기록이 아직 없어요`;
+        my.append(lab, document.createElement('span'), hint);
+      }
+    } else my.classList.remove('show');
+    // 숫자 이미지는 화면에 붙은 뒤 크기 계산이 가능해서 마지막에
+    // 랭킹 v2.9: 승인 시안처럼 점수는 숫자 그림 대신 글자 (1,000 단위 쉼표)
+    if (Assets.kit('rank29')) for (const n of nums) { n.sc.textContent = Number(n.score || 0).toLocaleString('en-US'); n.sc.classList.remove('num-img'); }
+    else for (const n of nums) Digits.set(n.sc, n.score);
+  }
+  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  /* ---------- 배경/로고 이미지 적용 (있을 때만) ---------- */
+  function applyArt() {
+    const bg = (el, key) => { const img = Assets.image(key); if (img) el.style.backgroundImage = `url("${img.src}")`; };
+    bg($('screen-title'), Assets.image('titleScreen') && Assets.kit('title21') ? 'titleScreen' : 'title'); bg($('screen-codex'), Assets.image('codexScreen') && Assets.kit('codex25') ? 'codexScreen' : 'title'); bg($('screen-settings'), Assets.image('settingsScreen') && Assets.kit('opt32') ? 'settingsScreen' : 'title');
+    bg($('screen-game'), Assets.image('gameScreen') && Assets.kit('play38') ? 'gameScreen' : 'game');
+    bg($('screen-gameover'), 'gameover'); bg($('screen-ranking'), Assets.image('rankingScreen') && Assets.kit('rank29') ? 'rankingScreen' : 'gameover');
+    // 배경 오버레이 (v1.4): 받은 그림 그대로 한 장씩 겹침. 별빛은 투명도만 천천히 바꿔 반짝이게
+    for (const [key, cls] of [['dustOverlay', 'ov-dust'], ['starsOverlay', 'ov-stars']]) {
+      const img = Assets.image(key);
+      if (!img) continue;
+      const ovScreens = ['screen-game', 'screen-gameover', 'screen-codex', 'screen-settings', 'screen-ranking'];
+      if (!Assets.kit('title21')) ovScreens.unshift('screen-title');   // 타이틀 v2.1 배경에는 오버레이를 얹지 않음 (아트 미리보기와 같게)
+      if (Assets.kit('rank29')) ovScreens.splice(ovScreens.indexOf('screen-ranking'), 1);   // 랭킹 v2.9 배경판은 완성 그림 한 장 (겹쳐 그리지 않음)
+      if (Assets.kit('opt32')) ovScreens.splice(ovScreens.indexOf('screen-settings'), 1);   // 옵션 v3.2 배경판도 완성 그림 한 장
+      if (Assets.kit('play38')) ovScreens.splice(ovScreens.indexOf('screen-game'), 1);   // 플레이 v3.8 스킨도 완성 그림 한 장
+      for (const id of ovScreens) {
+        const scr = $(id);
+        if (scr.querySelector('.' + cls)) continue;
+        const ov = document.createElement('div');
+        ov.className = 'bg-overlay ' + cls; ov.style.backgroundImage = `url("${img.src}")`;
+        scr.prepend(ov);
+      }
+    }
+    const stage = document.getElementById('stage');
+    for (const k of Object.keys(CONFIG.assets.uiKits)) stage.classList.toggle('ui-' + k, Assets.kit(k));
+    stage.classList.toggle('has-logo', !!Assets.image('logo'));
+    const logo = Assets.image('logo');
+    if (logo) { $('title-logo').innerHTML = ''; $('title-logo').appendChild(logo.cloneNode()); }
+    document.querySelectorAll('img.deco[data-art]').forEach((el) => {
+      const img = Assets.image(el.dataset.art);
+      if (img) { el.src = img.src; el.classList.add('on'); }
+    });
+    const mascot = Assets.image('mascotTop');
+    $('gameover-mascot').style.backgroundImage = `url("${mascot ? mascot.src : (Assets.getSprite(0).toDataURL ? Assets.getSprite(0).toDataURL() : Assets.getSprite(0).src)}")`;
+  }
+
+  function init() {
+    Icons.apply();
+    bindActions();
+    bindRegister();
+    buildEvoList();
+    applyArt();
+    Digits.set($('hud-score'), 0);
+    Digits.set($('hud-best'), Store.get().best);
+  }
+
+  return {
+    init, show, showOverlay, setScore, setNext, setMaxTier, onDiscover, onSeen, onGameOver, actions, confirmDialog,
+    get current() { return current; },
+    setLoading: (p) => { $('loading-fill').style.width = Math.round(p * 100) + '%'; },
+  };
+})();
+
+</script>
+<script>
+/* =========================================================
+ * 이미지 자리 표시 모드 (아트 작업 확인용)
+ *  켜기: 주소 끝에 ?slots  또는  F2 (어느 화면에서든 켜고 끄기)
+ *  - HTML 요소: data-slot 이 붙은 요소에 점선 테두리 + "파일명 · 원본 크기"
+ *  - 게임 캔버스: 유리 상자 / 드로퍼 / 오브젝트는 game.js 가 직접 그림 (Game.setSlots)
+ *  표시되는 테두리는 '지금 화면에서 그 그림이 차지하는 자리'. 원본 크기는 이름표에 적힌 값
+ * ========================================================= */
+const Slots = (() => {
+  let on = false, layer = null, timer = null;
+
+  function ensureLayer() {
+    if (layer) return layer;
+    layer = document.createElement('div');
+    layer.id = 'slot-layer';
+    document.getElementById('stage').appendChild(layer);
+    return layer;
+  }
+
+  function draw() {
+    const L = ensureLayer();
+    L.innerHTML = '';
+    if (!on) return;
+    const stage = document.getElementById('stage').getBoundingClientRect();
+    const k = stage.width / CONFIG.stage.width;
+    document.querySelectorAll('#stage [data-slot]').forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height || getComputedStyle(el).opacity === '0') return;   // 숨겨진 요소 제외
+      const x = (r.left - stage.left) / k, y = (r.top - stage.top) / k, w = r.width / k, h = r.height / k;
+      const isBg = el.tagName === 'SECTION';
+      const box = document.createElement('div');
+      box.className = 'slot-box' + (isBg ? ' bg' : '');
+      Object.assign(box.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
+      const tag = document.createElement('div');
+      tag.className = 'slot-tag';
+      tag.textContent = el.dataset.slot + (isBg ? '' : `  [화면 ${Math.round(w)}×${Math.round(h)}]`);
+      if (!isBg && x + 300 > CONFIG.stage.width) tag.classList.add('right');   // 오른쪽 끝 요소는 이름표를 오른쪽 정렬
+      box.appendChild(tag);
+      L.appendChild(box);
+    });
+  }
+
+  function set(v) {
+    on = v;
+    document.getElementById('stage').classList.toggle('show-slots', on);
+    if (typeof Game !== 'undefined' && Game.setSlots) Game.setSlots(on);
+    clearInterval(timer);
+    if (on) timer = setInterval(draw, 300);   // 화면 전환·애니메이션을 따라가도록 주기적으로 다시 그림
+    draw();
+  }
+
+  function init() {
+    window.addEventListener('keydown', (e) => { if (e.key === 'F2') { e.preventDefault(); set(!on); } });
+    if (/[?&]slots\b/.test(location.search)) set(true);
+  }
+
+  return { init, set, get on() { return on; } };
+})();
+
+</script>
+<script>
+/* =========================================================
+ * 부트스트랩: 스테이지 스케일, 입력, 초기화
+ * 입력: 마우스/터치 이동 → 드로퍼 이동, 클릭/터치 떼기 → 드롭
+ *       키보드 ←/→ (A/D) 이동, Space/Enter 드롭, Esc/P 일시정지
+ * ========================================================= */
+(() => {
+  const stage = document.getElementById('stage');
+  let scale = 1, offX = 0, offY = 0;
+
+  function fit() {
+    const { width, height } = CONFIG.stage;
+    scale = Math.min(window.innerWidth / width, window.innerHeight / height);
+    offX = (window.innerWidth - width * scale) / 2;
+    offY = (window.innerHeight - height * scale) / 2;
+    stage.style.transform = `translate(${offX}px, ${offY}px) scale(${scale})`;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  const toStageX = (clientX) => (clientX - offX) / scale;
+
+  /* ---------- 플레이 입력 ---------- */
+  const gameScreen = document.getElementById('screen-game');
+  const inUI = (e) => e.target.closest('button, .evo-panel, .hud-left');
+
+  gameScreen.addEventListener('pointermove', (e) => Game.setPointerX(toStageX(e.clientX)));
+  gameScreen.addEventListener('pointerdown', (e) => {
+    if (inUI(e)) return;
+    Sound.unlock();
+    Game.setPointerX(toStageX(e.clientX));
+  });
+  gameScreen.addEventListener('pointerup', (e) => {
+    if (inUI(e) || Game.state !== 'playing') return;
+    Game.setPointerX(toStageX(e.clientX));
+    Game.drop();
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (UI.current !== 'game') return;
+    if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') {
+      if (Game.state === 'playing') UI.actions.pause();
+      else if (Game.state === 'paused') UI.actions.resume();
+      return;
+    }
+    if (Game.state !== 'playing') return;
+    if (e.key === 'ArrowLeft' || e.key === 'a') Game.nudge(-24);
+    if (e.key === 'ArrowRight' || e.key === 'd') Game.nudge(24);
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); Game.drop(); }
+  });
+
+  // 탭이 숨겨지면 자동 일시정지
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && Game.state === 'playing') UI.actions.pause();
+  });
+
+  /* ---------- 부팅 ---------- */
+  async function boot() {
+    Store.load();
+    Sound.preload();
+    await Assets.loadAll(UI.setLoading);
+    await Digits.load();
+    if (Assets.kit('play38') && CONFIG.board38) Object.assign(CONFIG.board, CONFIG.board38);   // 플레이 v3.8 스킨 좌표
+    Game.init(document.getElementById('game-canvas'), {
+      onScore: UI.setScore,
+      onNext: UI.setNext,
+      onMaxTier: UI.setMaxTier,
+      onDiscover: UI.onDiscover,
+      onSeen: UI.onSeen,
+      onGameOver: UI.onGameOver,
+    });
+    UI.init();
+    Slots.init();
+    setTimeout(() => UI.show('title'), 200);
+  }
+  boot();
+})();
+
+</script>
