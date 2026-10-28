@@ -1124,6 +1124,23 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background: url("assets/ui/icon_crown.png") center / contain no-repeat;
 }
 
+/* ---------- v4.2 선택 그림 (.ui-result42) ---------- */
+/* 버튼 아이콘 48×48 → 24×24 (게임 옛 아이콘은 숨겨 이중 표시 없음) */
+#stage.ui-result41.ui-result42 .gameover-card .btn-tile [data-ico] { display: none; }
+#stage.ui-result41.ui-result42 .gameover-card .btn-tile::before {
+  content: ""; flex: none; width: 24px; height: 24px; background: center / 100% 100% no-repeat;
+}
+#stage.ui-result41.ui-result42 .gameover-card .btn-tile[data-action=home]::before    { background-image: url("assets/result/result_icon_home.png"); }
+#stage.ui-result41.ui-result42 .gameover-card .btn-tile[data-action=retry]::before   { background-image: url("assets/result/result_icon_retry.png"); }
+#stage.ui-result41.ui-result42 .gameover-card .btn-tile[data-action=ranking]::before { background-image: url("assets/result/result_icon_ranking.png"); }
+/* NEW 배지 110×46 → 55×23 (글자는 그림에 있음) */
+#stage.ui-result41.ui-result42 .gameover-card .badge-new {
+  width: 55px; height: 23px; padding: 0; font-size: 0; color: transparent; border-radius: 0;
+  background: url("assets/result/result_badge_new.png") center / 100% 100% no-repeat;
+}
+/* BEST 왕관 44×44 → 22×22 */
+#stage.ui-result41.ui-result42 .gameover-card .result-best::before { background-image: url("assets/result/result_icon_best_crown.png"); }
+
 </style>
 
 <div id="viewport">
@@ -1474,6 +1491,8 @@ const CONFIG = {
         '../result/result_btn_secondary_normal', '../result/result_btn_secondary_hover', '../result/result_btn_secondary_pressed',
         '../result/result_btn_gold_normal', '../result/result_btn_gold_hover', '../result/result_btn_gold_pressed',
       ],
+      // 결과 화면 v4.2 선택 그림 (따로 묶음). 모두 있으면 .ui-result42 — 버튼 아이콘·NEW 배지·BEST 왕관
+      result42: ['../result/result_icon_home', '../result/result_icon_retry', '../result/result_icon_ranking', '../result/result_badge_new', '../result/result_icon_best_crown'],
       // 일시정지 v3.6 (assets/pause/, 아트 요청 중). 모두 있으면 .ui-pause36 → css/skin-pause.css. 없으면 지금 일시정지 창 그대로
       pause36: [
         '../pause/pause_panel', '../pause/pause_btn_main_normal', '../pause/pause_btn_main_hover', '../pause/pause_btn_main_pressed',
