@@ -1142,6 +1142,62 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 #stage.ui-result41.ui-result42 .gameover-card .result-best::before { background-image: url("assets/result/result_icon_best_crown.png"); }
 
 </style>
+  <style>
+/* =========================================================
+ * 결과 화면 v4.4 (미리보기 전용 묶음 .ui-result44, 주소에 ?kit=result44 일 때만)
+ *  - 승인 원화에서 뽑은 캐릭터+구름 제목판·버튼 3개(글자·아이콘 포함), 동적 영역을 비운 패널·등록 판
+ *  - 좌표: LAYOUT_1280x720.json. 창 (306,151) 668×536 기준 창 안 좌표
+ *  - 점수는 A 스타일 숫자 그림(assets/numbers/result), 그 외 글자는 게임 글자
+ * ========================================================= */
+#stage.ui-result44 .gameover-card {
+  left: 306px; top: 151px; width: 668px; height: 536px;
+  background-image: url("assets/result44/result_panel_dynamic_base.png");
+}
+/* 캐릭터 + '게임 종료' 구름 제목판 (375,0) 525×244 → (69,-151). 제목 글자·이전 캐릭터는 그림에 있으므로 숨김 */
+#stage.ui-result44 .gameover-card .mascot-top {
+  left: 69px; top: -151px; width: 525px; height: 244px; z-index: 2;
+  background: url("assets/result44/approved_character_cloud_title_full.png") center / 100% 100% no-repeat !important;
+}
+#stage.ui-result44 .gameover-card .card-title { display: none; }
+#stage.ui-result44 .gameover-card .result-label { top: 96px; width: 668px; font-size: 19px; color: #5941bb; }
+/* 점수: 가운데 (640,328) → (334,177) */
+#stage.ui-result44 .gameover-card .result-score { left: 84px; top: 140px; width: 500px; height: 74px; }
+#stage.ui-result44 .gameover-card #go-score { font-size: 62px; max-width: 420px; }
+#stage.ui-result44 .gameover-card .result-best { top: 222px; width: 668px; font-size: 21px; }
+/* 최고 진화: 가운데 (640,433) → (334,282). 패널 그림에 판이 없어 글자·가구만 */
+#stage.ui-result44 .gameover-card .result-tier { left: 134px; top: 262px; width: 400px; height: 40px; background: none; font-size: 18px; }
+/* 랭킹 등록: 판 792×199 → 564×142 (비율 유지), 창 안 (52,302). '랭킹 등록' 라벨은 그림에 있음 */
+#stage.ui-result44 .gameover-card .rank-register {
+  left: 52px; top: 302px; width: 564px; height: 142px;
+  background-image: url("assets/result44/registration_blank_approx.png");
+}
+#stage.ui-result44 .gameover-card .section-pill { display: none; }
+#stage.ui-result44 .gameover-card .rank-msg { top: 40px; width: 564px; font-size: 16px; color: #5941bb; }
+#stage.ui-result44 .gameover-card .rank-row { left: 38px; top: 70px; }
+#stage.ui-result44 .gameover-card .rank-input { width: 316px; height: 42px; }
+#stage.ui-result44 .gameover-card .rank-input-wrap [data-ico] { top: 11px; }
+#stage.ui-result44 .gameover-card .btn-register { left: 330px; top: -4px; width: 150px; height: 53px; }
+/* 아래 버튼: 승인 원화 (글자·아이콘 포함). 비율 유지 높이 79, y 595 → 444 */
+#stage.ui-result44 .gameover-card .btn-tile {
+  top: 444px; height: 79px; font-size: 0; color: transparent; transition: transform 0.08s;
+}
+#stage.ui-result44 .gameover-card .btn-tile > *, #stage.ui-result44 .gameover-card .btn-tile::before { display: none !important; }
+#stage.ui-result44 .gameover-card .btn-tile[data-action=home]    { left: 30px;  width: 195px; background-image: url("assets/result44/btn_home_normal.png"); }
+#stage.ui-result44 .gameover-card .btn-tile[data-action=retry]   { left: 238px; width: 196px; background-image: url("assets/result44/btn_retry_normal.png"); }
+#stage.ui-result44 .gameover-card .btn-tile[data-action=ranking] { left: 445px; width: 194px; background-image: url("assets/result44/btn_ranking_normal.png"); }
+/* hover/pressed 그림이 없어 크기·위치만 (문서 허용) */
+#stage.ui-result44 .gameover-card .btn-tile:hover { transform: scale(1.03); }
+#stage.ui-result44 .gameover-card .btn-tile:active { transform: translateY(2px) scale(0.99); }
+#stage.ui-result44 .gameover-card .btn-tile[data-action=home]:hover, #stage.ui-result44 .gameover-card .btn-tile[data-action=home]:active { background-image: url("assets/result44/btn_home_normal.png"); }
+#stage.ui-result44 .gameover-card .btn-tile[data-action=retry]:hover, #stage.ui-result44 .gameover-card .btn-tile[data-action=retry]:active { background-image: url("assets/result44/btn_retry_normal.png"); }
+#stage.ui-result44 .gameover-card .btn-tile[data-action=ranking]:hover, #stage.ui-result44 .gameover-card .btn-tile[data-action=ranking]:active { background-image: url("assets/result44/btn_ranking_normal.png"); }
+/* 새 최고 기록 카드 312×171 → 200×110, 창 오른쪽 위 (패널 그림의 남은 자국 위) */
+#stage.ui-result44 .gameover-card .newbest-bubble {
+  left: 505px; top: 50px; width: 200px; height: 110px; padding: 6px 10px 14px; font-size: 17px;
+  background-image: url("assets/result44/new_record_blank_approx.png");
+}
+
+</style>
 
 <div id="viewport">
   <div id="stage">
@@ -1425,6 +1481,8 @@ const CONFIG = {
       dust:     'assets/fx/fx_dust.png',
     },
     // UI 묶음: 묶음 안의 파일이 모두 있으면 스테이지에 .ui-<묶음> 클래스가 붙고 css/skin.css 의 그림 UI 가 켜짐
+    // 미리보기 전용 묶음: 파일이 있어도 주소에 ?kit=이름 이 있을 때만 켜짐 (의뢰자 확인 전 시험용)
+    previewKits: ['result44'],
     uiKits: {
       png: [
         'btn_start_normal', 'btn_start_hover', 'btn_start_pressed', 'btn_sub_normal', 'btn_sub_hover', 'btn_sub_pressed', 'ui_title_best',
@@ -1493,6 +1551,12 @@ const CONFIG = {
       ],
       // 결과 화면 v4.2 선택 그림 (따로 묶음). 모두 있으면 .ui-result42 — 버튼 아이콘·NEW 배지·BEST 왕관
       result42: ['../result/result_icon_home', '../result/result_icon_retry', '../result/result_icon_ranking', '../result/result_badge_new', '../result/result_icon_best_crown'],
+      // 결과 화면 v4.4 (assets/result44/, 승인 원화 추출본). 미리보기 전용: 주소에 ?kit=result44 가 있을 때만 켜짐 (previewKits)
+      result44: [
+        '../result44/result_panel_dynamic_base', '../result44/approved_character_cloud_title_full',
+        '../result44/btn_home_normal', '../result44/btn_retry_normal', '../result44/btn_ranking_normal',
+        '../result44/registration_blank_approx', '../result44/new_record_blank_approx',
+      ],
       // 일시정지 v3.6 (assets/pause/, 아트 요청 중). 모두 있으면 .ui-pause36 → css/skin-pause.css. 없으면 지금 일시정지 창 그대로
       pause36: [
         '../pause/pause_panel', '../pause/pause_btn_main_normal', '../pause/pause_btn_main_hover', '../pause/pause_btn_main_pressed',
@@ -1709,7 +1773,11 @@ const Assets = (() => {
     for (const [kit, names] of Object.entries(CONFIG.assets.uiKits)) {
       const missing = [];
       jobs.push(Promise.all(names.map((n) => loadImage(`assets/ui/${n}.png`).then((img) => { if (!img) missing.push(n); })))
-        .then(() => { kits[kit] = missing.length === 0; kitMissing[kit] = missing; }));
+        .then(() => {
+          const preview = (CONFIG.assets.previewKits || []).includes(kit);
+          const asked = new URLSearchParams(location.search).getAll('kit').includes(kit);
+          kits[kit] = missing.length === 0 && (!preview || asked); kitMissing[kit] = missing;
+        }));
     }
     let done = 0;
     await Promise.all(jobs.map((p) => p.then(() => onProgress && onProgress(++done / jobs.length))));
@@ -1779,7 +1847,7 @@ const Icons = (() => {
  *  - 그림을 못 불러오면 그냥 글자로 표시 (콘솔에 한 번 경고)
  * ========================================================= */
 const Digits = (() => {
-  const VARIANTS = ['score', 'gold', 'purple', 'cream'];
+  const VARIANTS = ['score', 'gold', 'purple', 'cream', 'result'];   // result: 결과 화면 v4.4 A 스타일 (결과 점수만)
   const FILES = { '0': '0', '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9',
     ',': 'comma', '.': 'dot', '+': 'plus', '-': 'minus', '/': 'slash', ':': 'colon', '%': 'percent', '×': 'times' };
   const CELL_H = 160;
@@ -3071,7 +3139,8 @@ const UI = (() => {
     const bg = (el, key) => { const img = Assets.image(key); if (img) el.style.backgroundImage = `url("${img.src}")`; };
     bg($('screen-title'), Assets.image('titleScreen') && Assets.kit('title21') ? 'titleScreen' : 'title'); bg($('screen-codex'), Assets.image('codexScreen') && Assets.kit('codex25') ? 'codexScreen' : 'title'); bg($('screen-settings'), Assets.image('settingsScreen') && Assets.kit('opt32') ? 'settingsScreen' : 'title');
     bg($('screen-game'), Assets.image('gameScreen') && Assets.kit('play38') ? 'gameScreen' : 'game');
-    bg($('screen-gameover'), 'gameover'); bg($('screen-ranking'), Assets.image('rankingScreen') && Assets.kit('rank29') ? 'rankingScreen' : 'gameover');
+    bg($('screen-gameover'), 'gameover');
+    if (Assets.kit('result44') && Digits.available().includes('result')) $('go-score').dataset.num = 'result';   // 결과 v4.4: A 스타일 숫자 (결과 점수만) bg($('screen-ranking'), Assets.image('rankingScreen') && Assets.kit('rank29') ? 'rankingScreen' : 'gameover');
     // 배경 오버레이 (v1.4): 받은 그림 그대로 한 장씩 겹침. 별빛은 투명도만 천천히 바꿔 반짝이게
     for (const [key, cls] of [['dustOverlay', 'ov-dust'], ['starsOverlay', 'ov-stars']]) {
       const img = Assets.image(key);
