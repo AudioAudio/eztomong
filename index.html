@@ -603,7 +603,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
  *  - 배경 2560×1440 → 화면 전체
  *  - layout_1280x720.json 의 칸은 그림 비율과 달라(로고 600×200 ↔ 그림 1.99:1, 시작 350×115 ↔ 3.75:1) 그대로 넣으면 찌그러짐
  *    → 칸의 가운데는 지키고, 그림 비율 그대로 크기만 맞춤
- *      로고 517×260 (가운데 640,158) / 시작 380×101 (가운데 640,392) / 보조 높이 70 (가운데 405·640·875, y 555)
+ *      로고 517×260 (가운데 640,158) / 시작 380×101 (y 335, v3.1 좌표) / 보조 높이 70 (가운데 405·640·875, y 555)
  *  - 버튼 글자·아이콘은 그림에 있음 → HTML 글자 숨김 / hover·pressed 는 그림 교체만
  * ========================================================= */
 #stage.ui-title30 .title-logo {
@@ -622,7 +622,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 #stage.ui-title30 .title-menu .btn [data-ico] { display: none; }
 #stage.ui-title30 .title-menu .btn:hover, #stage.ui-title30 .title-menu .btn:active { filter: none; transform: none; }
 #stage.ui-title30 .title-menu .btn:focus-visible { outline: 3px solid #fff; outline-offset: -6px; border-radius: 40px; }
-#stage.ui-title30 .btn-start { left: 450px; top: 341.5px; width: 380px; height: 101px; background-image: url("assets/title30/start_normal.png"); }
+#stage.ui-title30 .btn-start { left: 450px; top: 335px; width: 380px; height: 101px; background-image: url("assets/title30/start_normal.png"); }
 #stage.ui-title30 .btn-start:hover  { background-image: url("assets/title30/start_hover.png"); }
 #stage.ui-title30 .btn-start:active { background-image: url("assets/title30/start_pressed.png"); }
 #stage.ui-title30 .title-sub .btn[data-action=codex]    { left: 295.1px; top: 520px; width: 219.7px; height: 70px; background-image: url("assets/title30/codex_normal.png"); }
