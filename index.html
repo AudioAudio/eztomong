@@ -1067,6 +1067,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background-image: url("assets/gameplay/evolution_row_highlight.png");
 }
 
+/* v5.5 진화도 독립 판 (.ui-play55): evolution_panel_standalone_clean 2560×1440 투명 그림을 화면 전체 크기로 스킨 위에 덮음
+ *  순서: 스킨(배경) → 이 판 → 강조 띠 → 가구 (판은 .evo-panel 배경이라 그 안의 강조 띠·가구가 위에 그려짐) */
+#stage.ui-play38.ui-play55 #screen-game .evo-panel {
+  width: 1280px; height: 720px; pointer-events: none;
+  background: url("assets/gameplay/evolution_panel_standalone_clean.png") 0 0 / 1280px 720px no-repeat;
+}
+
 </style>
   <style>
 /* =========================================================
@@ -1621,6 +1628,8 @@ const CONFIG = {
       play39: ['../gameplay/evo_row_current'],
       // 플레이 v5.3: 글자 없는 새 진화도 강조 띠 (따로 묶음). 있으면 .ui-play53 — evo_row_current 대신
       play53: ['../gameplay/evolution_row_highlight'],
+      // 플레이 v5.5: 진화도 독립 판 (2560×1440 투명, 스킨 위에 덮음). 있으면 .ui-play55
+      play55: ['../gameplay/evolution_panel_standalone_clean'],
       // 결과 화면 v4.1 (assets/result/). 모두 있으면 .ui-result41 → css/skin-result.css
       result41: [
         '../result/result_panel', '../result/result_mascot_original', '../result/result_tier_plate',
