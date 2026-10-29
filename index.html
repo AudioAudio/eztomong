@@ -881,6 +881,21 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
  *  뒤 화면(타이틀 또는 일시정지된 게임)을 그대로 두고 그 위를 어둡게 + 창 그림 */
 #stage.ui-opt50 #screen-settings.over { z-index: 5; background-color: rgba(40, 24, 90, 0.45); }
 
+/* v5.2 (.ui-opt52): 글자 없는 새 초기화 버튼·토글 그림. 글자는 게임에서 씀
+ *  - 버튼·토글 그림 크기·위치·클릭 영역은 v3.2 와 같음 (179×63 / 103×44), 상태가 바뀌어도 글자 위치 고정
+ *  - 토글: ON 은 손잡이 오른쪽(왼쪽 빈 곳에 ON), OFF 는 손잡이 왼쪽(오른쪽 빈 곳에 OFF) */
+#stage.ui-opt32.ui-opt52 #screen-settings .btn-sm {
+  font-size: 24px; line-height: 61px; text-align: center; color: #fff; letter-spacing: 1px;
+  text-shadow: 0 0 2px #d8357a, 0 1px 2px #c42a6c, 0 2px 4px rgba(196, 42, 108, 0.35);
+}
+#stage.ui-opt32.ui-opt52 #screen-settings .toggle-ui::before {
+  display: block; content: "OFF"; position: absolute; top: 0; right: auto; left: 44%; width: 46%; height: 100%; background: none; box-shadow: none; transform: none;
+  border-radius: 0; font-size: 15px; line-height: 44px; text-align: center; color: #8a6bd8; letter-spacing: 0.5px;
+}
+#stage.ui-opt32.ui-opt52 #screen-settings .toggle input:checked + .toggle-ui::before {
+  content: "ON"; left: 9%; width: 46%; color: #fff; text-shadow: 0 0 2px #d8357a, 0 1px 2px #c42a6c;
+}
+
 </style>
   <style>
 /* =========================================================
@@ -1589,6 +1604,8 @@ const CONFIG = {
       opt32close: ['../options/close_hover', '../options/close_pressed'],
       // 옵션 v5.0 (요청 중): 바깥 투명 옵션 창. 있으면 .ui-opt50 — 배경판 대신 쓰고 뒤 화면(타이틀·게임)을 어둡게 보여 줌
       opt50: ['../options/options_panel_1280x720'],
+      // 옵션 v5.2: 글자 없는 새 초기화 버튼·토글 (reset_*, toggle_* 는 같은 이름으로 교체). secondary_* 가 있으면 새 판으로 보고 .ui-opt52 → 글자를 게임에서 씀
+      opt52: ['../options/secondary_normal', '../options/secondary_hover', '../options/secondary_pressed'],
       // 확인 창 v3.4 (assets/confirm/). 모두 있으면 .ui-confirm34 → css/skin-confirm.css
       confirm34: ['../confirm/confirm_panel', '../confirm/confirm_btn_yes', '../confirm/confirm_btn_no'],
       // 플레이 화면 v3.8 (assets/gameplay/). 있으면 .ui-play38 → css/skin-play.css + board38 좌표
