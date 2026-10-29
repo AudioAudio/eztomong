@@ -3224,7 +3224,7 @@ const UI = (() => {
     bg($('screen-game'), Assets.image('gameScreen') && Assets.kit('play38') ? 'gameScreen' : 'game');
     bg($('screen-gameover'), 'gameover');
     bg($('screen-ranking'), Assets.image('rankingScreen') && Assets.kit('rank29') ? 'rankingScreen' : 'gameover');
-    // 결과 v4.7: A 스타일 숫자(assets/numbers/result/)가 있으면 결과 점수에만 사용. 0·4·5·9 테두리 잘림으로 지금은 빼 둠 → 기존 보라 숫자
+    // 결과 A 스타일 숫자(assets/numbers/result/)가 있으면 결과 점수에만 사용. v5.0 숫자 0~9 + v4.7 쉼표
     if (Assets.kit('result47') && Digits.available().includes('result')) $('go-score').dataset.num = 'result';
     // 배경 오버레이 (v1.4): 받은 그림 그대로 한 장씩 겹침. 별빛은 투명도만 천천히 바꿔 반짝이게
     for (const [key, cls] of [['dustOverlay', 'ov-dust'], ['starsOverlay', 'ov-stars']]) {
