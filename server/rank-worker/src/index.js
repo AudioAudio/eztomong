@@ -32,7 +32,7 @@ export default {
     const url = new URL(request.url);
     try {
       let res;
-      if (url.pathname === '/api/health') res = json({ ok: true });
+      if (url.pathname === '/api/health') res = await health(env);
       else if (url.pathname === '/api/top' && request.method === 'GET') res = await top(url, env);
       else if (url.pathname === '/api/rank' && request.method === 'GET') res = await rankOf(url, env);
       else if (url.pathname === '/api/me' && request.method === 'GET') res = await me(url, env);
@@ -43,10 +43,21 @@ export default {
       return res;
     } catch (e) {
       console.error(e);
-      return json({ ok: false, error: 'server_error' }, 500, cors);
+      return json({ ok: false, error: 'server_error', detail: String((e && e.message) || e).slice(0, 200) }, 500, cors);
     }
   },
 };
+
+/* ---------- 상태 확인 (설정 점검용) ---------- */
+async function health(env) {
+  if (!env.DB) return json({ ok: false, error: 'no_db_binding', hint: 'Worker Settings > Bindings 에 D1 database 를 이름 DB 로 연결하세요' }, 500);
+  try {
+    await env.DB.prepare('SELECT COUNT(*) AS n FROM scores').first();
+  } catch (e) {
+    return json({ ok: false, error: 'db_error', detail: String(e.message || e).slice(0, 200), hint: 'D1 Console 에서 schema.sql 을 실행했는지 확인하세요' }, 500);
+  }
+  return json({ ok: true, db: true, origins: String(env.ALLOWED_ORIGINS || ''), admin: !!env.ADMIN_TOKEN });
+}
 
 /* ---------- 조회 ---------- */
 async function top(url, env) {
