@@ -790,6 +790,19 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 #stage.ui-rank29.ui-rank30 .ranking-list li.latest.r2 { background-image: url("assets/ranking/ranking_row_latest_overlay.png"), url("assets/ranking/ranking_row_2.png"); }
 #stage.ui-rank29.ui-rank30 .ranking-list li.latest.r3 { background-image: url("assets/ranking/ranking_row_latest_overlay.png"), url("assets/ranking/ranking_row_3.png"); }
 
+/* v5.0 방금 등록한 기록: 행 색 구분 대신 행 왼쪽 안쪽에 NEW 표시 (의뢰자 결정)
+ *  - 행 그림은 순위 그대로 (보통/금/은/동), 닉네임 색도 원래대로
+ *  - NEW 는 결과 화면과 같은 result_badge_new 110×46 → 55×23, 행 왼쪽 끝에서 14px, 세로 가운데 */
+#stage.ui-rank29.ui-rank30 .ranking-list li.latest { background-image: url("assets/ranking/ranking_row_normal.png"); }
+#stage.ui-rank29.ui-rank30 .ranking-list li.latest.r1 { background-image: url("assets/ranking/ranking_row_1.png"); }
+#stage.ui-rank29.ui-rank30 .ranking-list li.latest.r2 { background-image: url("assets/ranking/ranking_row_2.png"); }
+#stage.ui-rank29.ui-rank30 .ranking-list li.latest.r3 { background-image: url("assets/ranking/ranking_row_3.png"); }
+#stage.ui-rank29 .ranking-list li.latest .name { color: inherit; }
+#stage.ui-rank29.ui-result42 .ranking-list li.latest::before {
+  content: ""; position: absolute; left: 14px; top: 7.5px; width: 55px; height: 23px; pointer-events: none; z-index: 1;
+  background: url("assets/result/result_badge_new.png") center / 100% 100% no-repeat;
+}
+
 </style>
   <style>
 /* =========================================================
@@ -863,6 +876,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 #stage.ui-opt32.ui-opt32close #screen-settings .btn-close:hover::before { display: block; background-image: url("assets/options/close_hover.png"); }
 #stage.ui-opt32.ui-opt32close #screen-settings .btn-close:active::before { display: block; background-image: url("assets/options/close_pressed.png"); }
+
+/* 옵션 v5.0 (요청 중, .ui-opt50): 바깥이 투명한 옵션 창 options_panel_1280x720 을 받으면
+ *  뒤 화면(타이틀 또는 일시정지된 게임)을 그대로 두고 그 위를 어둡게 + 창 그림 */
+#stage.ui-opt50 #screen-settings.over { z-index: 5; background-color: rgba(40, 24, 90, 0.45); }
 
 </style>
   <style>
@@ -1491,6 +1508,8 @@ const CONFIG = {
       rankingScreen: 'assets/ranking/ranking_backplate.png',
       // 옵션 v3.2: 옵션 화면 전용 배경판 (제목·토끼·항목 이름·아이콘·닫기 그림 포함, opt32 묶음이 모두 있을 때만)
       settingsScreen: 'assets/options/options_backplate_1280x720.png',
+      // 옵션 v5.0 (요청 중): 바깥이 투명한 옵션 창 1280×720. 있으면(opt50) 뒤 화면을 어둡게 비춰 보이게
+      settingsPanel: 'assets/options/options_panel_1280x720.png',
       // 플레이 v3.8: 플레이 화면 전체 스킨 (배경 + SCORE/NEXT/진화도 판 + 유리 상자 + 일시정지 그림 포함). play38 묶음이 있을 때만
       gameScreen: 'assets/gameplay/gameplay_full_skin_clean_2560x1440.png',
       game:     'assets/bg/bg_game.png',
@@ -1568,6 +1587,8 @@ const CONFIG = {
       ],
       // 옵션 닫기 hover/pressed (v3.3, 선택 묶음). 모두 있으면 .ui-opt32close
       opt32close: ['../options/close_hover', '../options/close_pressed'],
+      // 옵션 v5.0 (요청 중): 바깥 투명 옵션 창. 있으면 .ui-opt50 — 배경판 대신 쓰고 뒤 화면(타이틀·게임)을 어둡게 보여 줌
+      opt50: ['../options/options_panel_1280x720'],
       // 확인 창 v3.4 (assets/confirm/). 모두 있으면 .ui-confirm34 → css/skin-confirm.css
       confirm34: ['../confirm/confirm_panel', '../confirm/confirm_btn_yes', '../confirm/confirm_btn_no'],
       // 플레이 화면 v3.8 (assets/gameplay/). 있으면 .ui-play38 → css/skin-play.css + board38 좌표
@@ -2876,7 +2897,10 @@ const UI = (() => {
 
   /* ---------- 화면 전환 ---------- */
   function show(name) {
-    for (const s of SCREENS) $('screen-' + s).classList.toggle('active', s === name);
+    // 옵션 v5.0: 바깥 투명 옵션 창이면 부른 화면(타이틀·게임)을 뒤에 그대로 둠 (어둡게는 CSS)
+    const under = name === 'settings' && Assets.kit('opt50') ? (returnTo === 'pause' ? 'game' : returnTo) : null;
+    for (const s of SCREENS) $('screen-' + s).classList.toggle('active', s === name || s === under);
+    $('screen-settings').classList.toggle('over', !!under);
     current = name;
     if (name === 'title') $('title-best').textContent = Store.get().best.toLocaleString();
     if (name === 'codex') renderCodex();
@@ -3196,7 +3220,7 @@ const UI = (() => {
   /* ---------- 배경/로고 이미지 적용 (있을 때만) ---------- */
   function applyArt() {
     const bg = (el, key) => { const img = Assets.image(key); if (img) el.style.backgroundImage = `url("${img.src}")`; };
-    bg($('screen-title'), Assets.image('titleScreen') && Assets.kit('title21') ? 'titleScreen' : 'title'); bg($('screen-codex'), Assets.image('codexScreen') && Assets.kit('codex25') ? 'codexScreen' : 'title'); bg($('screen-settings'), Assets.image('settingsScreen') && Assets.kit('opt32') ? 'settingsScreen' : 'title');
+    bg($('screen-title'), Assets.image('titleScreen') && Assets.kit('title21') ? 'titleScreen' : 'title'); bg($('screen-codex'), Assets.image('codexScreen') && Assets.kit('codex25') ? 'codexScreen' : 'title'); bg($('screen-settings'), Assets.kit('opt50') ? 'settingsPanel' : Assets.image('settingsScreen') && Assets.kit('opt32') ? 'settingsScreen' : 'title');
     bg($('screen-game'), Assets.image('gameScreen') && Assets.kit('play38') ? 'gameScreen' : 'game');
     bg($('screen-gameover'), 'gameover');
     bg($('screen-ranking'), Assets.image('rankingScreen') && Assets.kit('rank29') ? 'rankingScreen' : 'gameover');
