@@ -598,6 +598,43 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background: url("assets/title/ui_title_best.png") center / 100% 100% no-repeat; border: none; box-shadow: none; border-radius: 0;
 }
 
+/* =========================================================
+ * 타이틀 v3.0 (.ui-title30): 배경·로고·버튼 독립 PNG (assets/title30/)
+ *  - 배경 2560×1440 → 화면 전체
+ *  - layout_1280x720.json 의 칸은 그림 비율과 달라(로고 600×200 ↔ 그림 1.99:1, 시작 350×115 ↔ 3.75:1) 그대로 넣으면 찌그러짐
+ *    → 칸의 가운데는 지키고, 그림 비율 그대로 크기만 맞춤
+ *      로고 517×260 (가운데 640,158) / 시작 380×101 (가운데 640,392) / 보조 높이 70 (가운데 405·640·875, y 555)
+ *  - 버튼 글자·아이콘은 그림에 있음 → HTML 글자 숨김 / hover·pressed 는 그림 교체만
+ * ========================================================= */
+#stage.ui-title30 .title-logo {
+  left: 381.5px; top: 28px; width: 517px; height: 260px; transform: none;
+  background: url("assets/title30/title_logo.png") center / 100% 100% no-repeat;
+}
+#stage.ui-title30 .title-logo > * { display: none; }
+#stage.ui-title30 .deco-title { display: none !important; }
+#stage.ui-title30 .title-menu { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform: none; display: block; pointer-events: none; }
+#stage.ui-title30 .title-sub { display: block; }
+#stage.ui-title30 .title-menu .btn {
+  position: absolute; padding: 0; pointer-events: auto; color: transparent; font-size: 0; text-shadow: none;
+  background-color: transparent; background-repeat: no-repeat; background-position: center; background-size: 100% 100%;
+  border: none; border-radius: 0; box-shadow: none; filter: none; transform: none; transition: none;
+}
+#stage.ui-title30 .title-menu .btn [data-ico] { display: none; }
+#stage.ui-title30 .title-menu .btn:hover, #stage.ui-title30 .title-menu .btn:active { filter: none; transform: none; }
+#stage.ui-title30 .title-menu .btn:focus-visible { outline: 3px solid #fff; outline-offset: -6px; border-radius: 40px; }
+#stage.ui-title30 .btn-start { left: 450px; top: 341.5px; width: 380px; height: 101px; background-image: url("assets/title30/start_normal.png"); }
+#stage.ui-title30 .btn-start:hover  { background-image: url("assets/title30/start_hover.png"); }
+#stage.ui-title30 .btn-start:active { background-image: url("assets/title30/start_pressed.png"); }
+#stage.ui-title30 .title-sub .btn[data-action=codex]    { left: 295.1px; top: 520px; width: 219.7px; height: 70px; background-image: url("assets/title30/codex_normal.png"); }
+#stage.ui-title30 .title-sub .btn[data-action=codex]:hover    { background-image: url("assets/title30/codex_hover.png"); }
+#stage.ui-title30 .title-sub .btn[data-action=codex]:active   { background-image: url("assets/title30/codex_pressed.png"); }
+#stage.ui-title30 .title-sub .btn[data-action=ranking]  { left: 540.1px; top: 520px; width: 199.8px; height: 70px; background-image: url("assets/title30/ranking_normal.png"); }
+#stage.ui-title30 .title-sub .btn[data-action=ranking]:hover  { background-image: url("assets/title30/ranking_hover.png"); }
+#stage.ui-title30 .title-sub .btn[data-action=ranking]:active { background-image: url("assets/title30/ranking_pressed.png"); }
+#stage.ui-title30 .title-sub .btn[data-action=settings] { left: 769.9px; top: 520px; width: 210.2px; height: 70px; background-image: url("assets/title30/options_normal.png"); }
+#stage.ui-title30 .title-sub .btn[data-action=settings]:hover { background-image: url("assets/title30/options_hover.png"); }
+#stage.ui-title30 .title-sub .btn[data-action=settings]:active { background-image: url("assets/title30/options_pressed.png"); }
+
 </style>
   <style>
 /* =========================================================
@@ -1546,6 +1583,8 @@ const CONFIG = {
       title:    'assets/bg/bg_title.png',
       // 타이틀 v2.1 (시범): 타이틀 화면에만 쓰는 새 배경. 도감·옵션은 위 bg_title 그대로
       titleScreen: 'assets/title/bg_title.png',
+      // 타이틀 v3.0 (독립 PNG): 2560×1440 배경. title30 묶음이 모두 있을 때만
+      titleScreen30: 'assets/title30/title_background_2560x1440.png',
       // 도감 v2.5: 도감 화면 전용 배경판 (제목·토끼·창 테두리가 그림에 포함)
       codexScreen: 'assets/codex/codex_backplate.png',
       // 랭킹 v2.9: 랭킹 화면 전용 배경판 (배경·토끼 구름·제목·닫기 그림 포함, rank29 묶음이 모두 있을 때만)
@@ -1605,6 +1644,10 @@ const CONFIG = {
         '../title/btn_ranking_hover', '../title/btn_ranking_pressed', '../title/btn_settings_hover', '../title/btn_settings_pressed',
         '../title/ui_title_best',
       ],
+      // 타이틀 v3.0 (assets/title30/, 배경·로고·버튼 각각 독립 PNG). 모두 있으면 .ui-title30 → css/skin-title.css 아래쪽
+      title30: ['../title30/title_background_2560x1440', '../title30/title_logo',
+        '../title30/start_normal', '../title30/start_hover', '../title30/start_pressed', '../title30/codex_normal', '../title30/codex_hover', '../title30/codex_pressed',
+        '../title30/ranking_normal', '../title30/ranking_hover', '../title30/ranking_pressed', '../title30/options_normal', '../title30/options_hover', '../title30/options_pressed'],
       // 도감 v2.5 (assets/codex/). 모두 있으면 .ui-codex25 → css/skin-codex.css
       codex25: [
         '../codex/codex_backplate', '../codex/codex_cell_normal', '../codex/codex_cell_selected', '../codex/codex_cell_locked',
@@ -3272,7 +3315,7 @@ const UI = (() => {
   /* ---------- 배경/로고 이미지 적용 (있을 때만) ---------- */
   function applyArt() {
     const bg = (el, key) => { const img = Assets.image(key); if (img) el.style.backgroundImage = `url("${img.src}")`; };
-    bg($('screen-title'), Assets.image('titleScreen') && Assets.kit('title21') ? 'titleScreen' : 'title'); bg($('screen-codex'), Assets.image('codexScreen') && Assets.kit('codex25') ? 'codexScreen' : 'title'); bg($('screen-settings'), Assets.kit('opt50') ? 'settingsPanel' : Assets.image('settingsScreen') && Assets.kit('opt32') ? 'settingsScreen' : 'title');
+    bg($('screen-title'), Assets.kit('title30') ? 'titleScreen30' : Assets.image('titleScreen') && Assets.kit('title21') ? 'titleScreen' : 'title'); bg($('screen-codex'), Assets.image('codexScreen') && Assets.kit('codex25') ? 'codexScreen' : 'title'); bg($('screen-settings'), Assets.kit('opt50') ? 'settingsPanel' : Assets.image('settingsScreen') && Assets.kit('opt32') ? 'settingsScreen' : 'title');
     bg($('screen-game'), Assets.image('gameScreen') && Assets.kit('play38') ? 'gameScreen' : 'game');
     bg($('screen-gameover'), 'gameover');
     bg($('screen-ranking'), Assets.image('rankingScreen') && Assets.kit('rank29') ? 'rankingScreen' : 'gameover');
@@ -3283,7 +3326,7 @@ const UI = (() => {
       const img = Assets.image(key);
       if (!img) continue;
       const ovScreens = ['screen-game', 'screen-gameover', 'screen-codex', 'screen-settings', 'screen-ranking'];
-      if (!Assets.kit('title21')) ovScreens.unshift('screen-title');   // 타이틀 v2.1 배경에는 오버레이를 얹지 않음 (아트 미리보기와 같게)
+      if (!Assets.kit('title21') && !Assets.kit('title30')) ovScreens.unshift('screen-title');   // 타이틀 v2.1 배경에는 오버레이를 얹지 않음 (아트 미리보기와 같게)
       if (Assets.kit('rank29')) ovScreens.splice(ovScreens.indexOf('screen-ranking'), 1);   // 랭킹 v2.9 배경판은 완성 그림 한 장 (겹쳐 그리지 않음)
       if (Assets.kit('opt32')) ovScreens.splice(ovScreens.indexOf('screen-settings'), 1);   // 옵션 v3.2 배경판도 완성 그림 한 장
       if (Assets.kit('play38')) ovScreens.splice(ovScreens.indexOf('screen-game'), 1);   // 플레이 v3.8 스킨도 완성 그림 한 장
