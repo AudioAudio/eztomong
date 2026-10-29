@@ -1200,6 +1200,35 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background-image: url("assets/result47/new_record_label_blank.png");
 }
 
+/* ---------- v4.8 다듬기 ----------
+ * 아래 버튼: 195×79 → 172×70 (비율 유지, 약 12% 축소), 간격 10px, 세 버튼 가운데 정렬
+ *   화면 (372,581) / (554,581) / (736,581), 창 아래 여백 35px. 문서 제안 175×71·간격 2px 는 너무 붙어서
+ *   문서가 허용한 '조금 더 줄이고 간격 8~12px' 쪽으로. normal/hover/pressed·클릭 영역 모두 같은 칸 */
+#stage.ui-result47 .gameover-card .btn-tile { top: 430px; width: 172px !important; height: 70px; }
+#stage.ui-result47 .gameover-card .btn-tile[data-action=home]    { left: 66px; }
+#stage.ui-result47 .gameover-card .btn-tile[data-action=retry]   { left: 248px; }
+#stage.ui-result47 .gameover-card .btn-tile[data-action=ranking] { left: 430px; }
+/* 팝업 바깥만 살짝 어둡게 (그림에는 필터 없음) */
+#stage.ui-result47 #screen-gameover::before {
+  content: ""; position: absolute; inset: 0; background: rgba(40, 24, 90, 0.22); pointer-events: none;
+}
+/* NEW 배지를 점수에서 조금 더 떼기 */
+#stage.ui-result47 .gameover-card .badge-new { margin-left: 12px; }
+
+/* 신기록 카드 v4.8 (.ui-result48): new_record_label_clear 312×171 → 208×114, 같은 자리
+ *   카드 그림이 약 6.6° 기울어 있어 글자도 같이 기울임 (요소를 6.6° 돌리고, 그림은 -6.6° 로 되돌려 그대로 표시)
+ *   글자: #CE2369, 굵게, 흰 테두리·그림자, 줄 간격 1.18 */
+#stage.ui-result47.ui-result48 .gameover-card .newbest-bubble {
+  background: none; transform: rotate(6.6deg); padding: 0 8px 4px; font-size: 18px; font-weight: 700; line-height: 1.18;
+  color: #ce2369; -webkit-text-stroke: 0.6px #fff; paint-order: stroke fill;
+  text-shadow: 0 1px 0 #fff, 0 0 3px rgba(255, 255, 255, 0.9), 0 2px 4px rgba(206, 35, 105, 0.18);
+}
+#stage.ui-result47.ui-result48 .gameover-card .newbest-bubble::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; transform: rotate(-6.6deg);
+  background: url("assets/result47/new_record_label_clear.png") center / 100% 100% no-repeat;
+}
+#stage.ui-result47.ui-result48 .gameover-card .newbest-bubble.show { animation: none; }
+
 </style>
 
 <div id="viewport">
@@ -1564,6 +1593,8 @@ const CONFIG = {
         '../result47/retry_btn_normal', '../result47/retry_btn_hover', '../result47/retry_btn_pressed',
         '../result47/rank_btn_normal', '../result47/rank_btn_hover', '../result47/rank_btn_pressed',
       ],
+      // 결과 화면 v4.8 신기록 카드 (따로 묶음). 있으면 .ui-result48 — new_record_label_clear 로 교체
+      result48: ['../result47/new_record_label_clear'],
       // 일시정지 v3.6 (assets/pause/, 아트 요청 중). 모두 있으면 .ui-pause36 → css/skin-pause.css. 없으면 지금 일시정지 창 그대로
       pause36: [
         '../pause/pause_panel', '../pause/pause_btn_main_normal', '../pause/pause_btn_main_hover', '../pause/pause_btn_main_pressed',
