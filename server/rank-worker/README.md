@@ -22,12 +22,8 @@ npx wrangler login
 ```
 브라우저가 열리면 **Allow** 를 누르세요.
 
-## 3. 데이터베이스 만들기
-```
-npx wrangler d1 create tomong-rank
-```
-출력에 나오는 `database_id = "xxxxxxxx-xxxx-..."` 값을 복사해서, 이 폴더의 `wrangler.toml` 안
-`database_id = "REPLACE_WITH_DATABASE_ID"` 의 따옴표 안에 붙여 넣고 저장합니다.
+## 3. 데이터베이스 (이미 만들어 둔 것 사용)
+`wrangler.toml` 에 미리 만든 D1 데이터베이스 id(`9d9296ef-8f56-452f-93b1-c46eb2218586`)가 들어가 있습니다. 새로 만들 필요 없습니다.
 
 ## 4. 표 만들기
 ```

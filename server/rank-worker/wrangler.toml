@@ -10,7 +10,7 @@ ALLOWED_ORIGINS = "https://audioaudio.github.io,http://localhost:8765,http://127
 [[d1_databases]]
 binding = "DB"
 database_name = "tomong-rank"
-# 아래 값은 'npx wrangler d1 create tomong-rank' 를 실행하면 나오는 database_id 로 바꿔 주세요
-database_id = "REPLACE_WITH_DATABASE_ID"
+# 의뢰자가 미리 만든 D1 데이터베이스
+database_id = "9d9296ef-8f56-452f-93b1-c46eb2218586"
 
 # 관리자 토큰(기록 삭제용)은 'npx wrangler secret put ADMIN_TOKEN' 으로 따로 넣습니다 (이 파일에 쓰지 않음)
