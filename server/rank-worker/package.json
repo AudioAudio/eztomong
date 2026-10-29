@@ -1,0 +1,13 @@
+{
+  "name": "tomong-rank",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev --local --port 8787",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute tomong-rank --remote --file=schema.sql",
+    "db:init:local": "wrangler d1 execute tomong-rank --local --file=schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^4.155.0"
+  }
+}

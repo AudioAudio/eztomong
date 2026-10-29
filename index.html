@@ -392,6 +392,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 .rank-colhead { display: none; }   /* 랭킹 v2.8 그림 UI 에서만 보임 */
 
+/* 랭킹 서버 상태 (불러오는 중 / 오프라인) */
+.rank-source { display: none; position: absolute; right: 24px; top: 8px; font-size: 13px; color: #8f7fc9; pointer-events: none; }
+.rank-source.show { display: block; }
+
 </style>
   <style>
 /* =========================================================
@@ -840,6 +844,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   content: ""; position: absolute; left: 14px; top: 7.5px; width: 55px; height: 23px; pointer-events: none; z-index: 1;
   background: url("assets/result/result_badge_new.png") center / 100% 100% no-repeat;
 }
+
+/* 랭킹 서버 상태 글자 (불러오는 중 / 오프라인): 탭 줄 오른쪽 빈 곳 (x 958~1060, 탭과 같은 높이) */
+#stage.ui-rank29 .rank-source { left: 958px; right: auto; top: 143px; width: 104px; height: 48px; line-height: 1.25; display: none; align-items: center; justify-content: center; text-align: center; font-size: 12px; color: #8f7fc9; white-space: normal; }
+#stage.ui-rank29 .rank-source.show { display: flex; }
 
 </style>
   <style>
@@ -1471,6 +1479,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           <button class="rank-tab" data-tab="me" role="tab"><i data-ico="user"></i>내 랭킹</button>
         </div>
         <div class="rank-colhead" aria-hidden="true"><span>순위</span><span>닉네임</span><span>점수</span><span>날짜</span></div>
+        <div class="rank-source" id="rank-source" aria-live="polite"></div>
         <ol class="ranking-list" id="ranking-list"></ol>
         <div class="my-rank" id="my-rank"></div>
       </div>
@@ -1531,6 +1540,10 @@ const CONFIG = {
   //   물리 안쪽 폭 460 은 그대로 (아트 문서 요청), 가운데 640 도 그대로 → 양옆 그림 벽과 약 12px 여유
   //   높이 520 그대로 위로 50px 이동. 데드라인은 그림 점선에 맞춤 → 쌓을 수 있는 높이 474 → 432
   board38: { top: 100, bottom: 620, dangerY: 188, drawFrame: false },
+
+  // 랭킹 서버 (server/rank-worker, Cloudflare Worker + D1). url 이 비어 있으면 이 기기 랭킹만 사용
+  //  예: url: 'https://tomong-rank.<계정이름>.workers.dev'
+  rankServer: { url: '', timeoutMs: 5000 },
 
   drop: {
     cooldownMs: 550,         // 연속 드롭 간격
@@ -1758,6 +1771,8 @@ const Store = (() => {
     settings: { bgm: 0.6, sfx: 0.8, guide: true },
     stats: { plays: 0, merges: 0 },
     counts: CONFIG.tiers.map(() => 0),   // 단계별 획득 개수 (도감 상세)
+    device: '',               // 랭킹 서버용 기기 id (처음 등록할 때 만듦, 닉네임 주인 확인)
+    pending: [],              // 서버에 못 보낸 랭킹 등록 [{name, score, maxTier}] → 다음에 다시 보냄
   });
 
   let data = defaults();
@@ -1841,9 +1856,91 @@ const Store = (() => {
     return data.ranking.indexOf(entry) + 1;
   }
 
-  function reset() { data = defaults(); save(); }
+  /** 랭킹 서버용 기기 id (기록 초기화해도 유지: 닉네임 주인 확인용) */
+  function deviceId() {
+    if (!data.device) {
+      const r = (crypto && crypto.randomUUID) ? crypto.randomUUID() : 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+      data.device = r; save();
+    }
+    return data.device;
+  }
+  function addPending(name, score, maxTier) {
+    if (!Array.isArray(data.pending)) data.pending = [];
+    data.pending.push({ name: cleanName(name), score, maxTier });
+    data.pending = data.pending.slice(-20);
+    save();
+  }
 
-  return { load, save, discover, finishGame, rankFor, registerRank, recordsOf, addCount, cleanName, NAME_MAX, RANK_SIZE, reset, get: () => data };
+  function reset() { const device = data.device; data = defaults(); data.device = device; save(); }
+
+  return { load, save, discover, finishGame, rankFor, registerRank, recordsOf, addCount, cleanName, deviceId, addPending, NAME_MAX, RANK_SIZE, reset, get: () => data };
+})();
+
+</script>
+<script>
+/* =========================================================
+ * 서버 랭킹 (Cloudflare Worker + D1, server/rank-worker/)
+ *  - CONFIG.rankServer.url 이 비어 있으면 꺼짐 → 지금처럼 이 기기 랭킹만 사용
+ *  - 모든 요청은 timeoutMs 안에 끝나지 않으면 실패로 보고 기기 랭킹으로 대신함
+ *  - 서버에 못 보낸 등록은 Store.pending 에 모아 두었다가 다음에 다시 보냄 (flushPending)
+ * ========================================================= */
+const RankAPI = (() => {
+  const base = () => String((CONFIG.rankServer && CONFIG.rankServer.url) || '').replace(/\/+$/, '');
+  const enabled = () => !!base();
+  let online = null;   // 마지막 요청 결과 (true/false/null=아직 모름)
+
+  async function call(path, opts = {}) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), (CONFIG.rankServer && CONFIG.rankServer.timeoutMs) || 5000);
+    try {
+      const res = await fetch(base() + path, { ...opts, signal: ctrl.signal, headers: { 'Content-Type': 'application/json' } });
+      let body = null;
+      try { body = await res.json(); } catch (e) {}
+      online = true;
+      if (!body) return { ok: false, error: 'server_error', status: res.status };
+      if (!res.ok && body.ok !== false) body.ok = false;
+      body.status = res.status;
+      return body;
+    } catch (e) {
+      online = false;
+      return { ok: false, error: 'offline' };
+    } finally { clearTimeout(t); }
+  }
+
+  const top = (limit = 10) => call(`/api/top?limit=${limit}`);
+  const rankFor = (score) => call(`/api/rank?score=${encodeURIComponent(score)}`);
+  const me = (name) => call(`/api/me?name=${encodeURIComponent(name)}`);
+  const submit = (name, score, maxTier) => call('/api/submit', { method: 'POST', body: JSON.stringify({ name, score, maxTier, device: Store.deviceId() }) });
+
+  /** 실패했던 등록 다시 보내기 (네트워크 실패만 다시 시도, 서버가 거절한 것은 버림) */
+  let flushing = false;
+  async function flushPending() {
+    if (!enabled() || flushing) return;
+    const list = Store.get().pending || [];
+    if (!list.length) return;
+    flushing = true;
+    try {
+      while ((Store.get().pending || []).length) {
+        const p = Store.get().pending[0];
+        const r = await submit(p.name, p.score, p.maxTier);
+        if (r.error === 'offline' || r.error === 'server_error') break;      // 아직 안 됨 → 다음에
+        if (r.error === 'rate_limited') { await new Promise((ok) => setTimeout(ok, 5500)); continue; }
+        Store.get().pending.shift(); Store.save();                          // 성공 또는 거절 → 목록에서 뺌
+      }
+    } finally { flushing = false; }
+  }
+
+  // 서버 거절 이유 → 화면 문구
+  const MESSAGES = {
+    invalid_name: '닉네임에 쓸 수 없는 글자가 있어요 (한글·영문·숫자)',
+    bad_word: '쓸 수 없는 닉네임이에요',
+    name_taken: '이미 다른 사람이 쓰고 있는 닉네임이에요',
+    invalid_score: '등록할 수 없는 점수예요',
+    rate_limited: '잠시 후에 다시 시도해 주세요',
+  };
+  const message = (err) => MESSAGES[err] || '랭킹 서버에 등록하지 못했어요';
+
+  return { enabled, top, rankFor, me, submit, flushPending, message, isOnline: () => online };
 })();
 
 </script>
@@ -3148,24 +3245,33 @@ const UI = (() => {
     tierEl.innerHTML = '';
     tierEl.appendChild(Assets.thumbnail(maxTier, 34));
     tierEl.appendChild(document.createTextNode(`최고 진화: ${CONFIG.tiers[maxTier].name}`));
-    setRegisterState(rank ? 'open' : (score > 0 ? 'out' : 'zero'), rank);
+    if (RankAPI.enabled() && score > 0) {
+      // 서버 랭킹: 몇 위인지 서버에 물어보고, 안 되면 기기 랭킹 순위로
+      setRegisterState('open', null);
+      const mine = lastResult;
+      RankAPI.rankFor(score).then((r) => {
+        if (lastResult !== mine || mine.registered || $('go-register').dataset.state !== 'open') return;
+        setRegisterState('open', r.ok ? r.rank : rank, true);
+      });
+    } else setRegisterState(rank ? 'open' : (score > 0 ? 'out' : 'zero'), rank);
     Sound.stopBgm();
-    if (rank) setTimeout(() => { const n = $('go-name'); n.focus(); n.select(); }, 250);
+    if (rank || (RankAPI.enabled() && score > 0)) setTimeout(() => { const n = $('go-name'); n.focus(); n.select(); }, 250);
   }
 
   /* ---------- 랭킹 등록 ---------- */
   // state: open(입력 가능) / done(등록 완료) / out(보관 한도 밖) / zero(0점 → 영역 숨김)
-  function setRegisterState(state, rank) {
+  function setRegisterState(state, rank, keepInput = false, text = '') {
     const msg = $('go-rank-msg'), row = $('go-rank-row');
     $('go-register').dataset.state = state;
     row.style.display = state === 'open' ? '' : 'none';
     msg.classList.remove('warn');
     if (state === 'open') {
-      msg.textContent = rank <= Store.RANK_SIZE ? `${rank}위 기록이에요! 닉네임을 입력하고 랭킹에 등록하세요` : `${rank}위 기록이에요. 닉네임을 입력하고 등록하세요`;
-      $('go-name').value = Store.get().lastName || '';
+      msg.textContent = !rank ? '닉네임을 입력하고 랭킹에 등록하세요'
+        : rank <= Store.RANK_SIZE ? `${rank}위 기록이에요! 닉네임을 입력하고 랭킹에 등록하세요` : `${rank}위 기록이에요. 닉네임을 입력하고 등록하세요`;
+      if (!keepInput) $('go-name').value = Store.get().lastName || '';
       $('go-submit').disabled = false;
     } else if (state === 'done') {
-      msg.textContent = `랭킹 ${rank}위로 등록했어요!`;
+      msg.textContent = text || `랭킹 ${rank}위로 등록했어요!`;
     } else if (state === 'out') {
       msg.textContent = '랭킹에 등록할 수 없는 점수예요';
     } else {
@@ -3186,14 +3292,53 @@ const UI = (() => {
         input.focus();
         return;
       }
+      if (RankAPI.enabled()) { submitServer(input); return; }
       const rank = Store.registerRank(input.value, lastResult.score, lastResult.maxTier);
       if (!rank) { setRegisterState('out'); return; }
       Sound.play('click');
-      lastResult.registered = true; lastResult.rank = rank;
+      lastResult.registered = true; lastResult.rank = rank; lastResult.localRank = rank;
       $('go-submit').disabled = true;
       input.blur();
       setRegisterState('done', rank);
     });
+  }
+
+  // 서버 랭킹 등록. 성공하면 기기 랭킹에도 남김. 연결 실패면 기기에 저장하고 나중에 다시 보냄
+  let submitting = false;
+  async function submitServer(input) {
+    if (submitting) return;
+    submitting = true;
+    const res = lastResult, name = Store.cleanName(input.value);
+    const msg = $('go-rank-msg');
+    $('go-submit').disabled = true;
+    msg.classList.remove('warn'); msg.textContent = '랭킹에 등록하는 중…';
+    const r = await RankAPI.submit(name, res.score, res.maxTier);
+    submitting = false;
+    if (lastResult !== res) return;
+    const saveLocal = () => {
+      res.localRank = Store.registerRank(name, res.score, res.maxTier);
+      if (!res.localRank) { Store.get().lastName = name; Store.save(); }
+    };
+    if (r.ok) {
+      saveLocal();
+      Sound.play('click');
+      res.registered = true; res.rank = r.rank; res.server = true;
+      input.blur();
+      setRegisterState('done', r.rank, false, r.updated ? `랭킹 ${r.rank}위로 등록했어요!`
+        : `'${r.row.name}' 님의 기존 최고 기록(${Number(r.row.score).toLocaleString()}점)이 더 높아서 ${r.rank}위 그대로예요`);
+    } else if (r.error === 'offline' || r.error === 'server_error') {
+      saveLocal();
+      Store.addPending(name, res.score, res.maxTier);
+      res.registered = true; res.rank = null;
+      input.blur();
+      setRegisterState('done', null, false, '랭킹 서버에 연결하지 못해 이 기기에 저장했어요. 다음에 자동으로 다시 보낼게요');
+    } else {
+      msg.textContent = RankAPI.message(r.error);
+      msg.classList.add('warn');
+      $('go-submit').disabled = false;
+      input.classList.remove('shake'); void input.offsetWidth; input.classList.add('shake');
+      input.focus();
+    }
   }
 
   /* ---------- 05 도감 ---------- */
@@ -3268,33 +3413,56 @@ const UI = (() => {
     return { li, sc, score: r.score };
   }
 
+  // 랭킹 화면: 서버 랭킹이 켜져 있으면 서버에서, 안 되면 이 기기 기록으로
+  let rankReq = 0;
   function renderRanking() {
     document.querySelectorAll('.rank-tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === rankTab));
-    const ol = $('ranking-list');
+    if (!RankAPI.enabled()) { setRankSource(''); renderLocalRanking(); return; }
+    const req = ++rankReq, tab = rankTab, me = Store.get().lastName;
+    setRankSource('불러오는 중…');
+    RankAPI.flushPending().then(() => Promise.all([tab === 'all' ? RankAPI.top(Store.RANK_SIZE) : Promise.resolve(null), me ? RankAPI.me(me) : Promise.resolve({ ok: true, row: null })]))
+      .then(([t, m]) => {
+        if (req !== rankReq || current !== 'ranking') return;
+        if ((t && !t.ok) || !m.ok) { setRankSource('오프라인 · 이 기기 기록'); renderLocalRanking(); return; }
+        setRankSource('');
+        const latestPos = lastResult && lastResult.registered && lastResult.server ? lastResult.rank : null;
+        const rows = tab === 'all' ? t.rows.map((r) => ({ r, pos: r.rank })) : (m.row ? [{ r: m.row, pos: m.row.rank }] : []);
+        drawRanking(rows, m.row ? { ...m.row } : null, me, latestPos);
+      });
+  }
+  function setRankSource(text) { const el = $('rank-source'); if (el) { el.textContent = text; el.classList.toggle('show', !!text); } }
+
+  function renderLocalRanking() {
     const st = Store.get();
     const me = st.lastName;
-    ol.innerHTML = '';
-    const nums = [];
     let rows;
     if (rankTab === 'all') rows = st.ranking.slice(0, Store.RANK_SIZE).map((r, i) => ({ r, pos: i + 1 }));
     else rows = Store.recordsOf(me).slice(0, Store.RANK_SIZE).map((r) => ({ r, pos: r.rank }));
+    const mine = Store.recordsOf(me);
+    const latestPos = lastResult && lastResult.registered ? lastResult.localRank : null;
+    drawRanking(rows, mine.length ? mine[0] : null, me, latestPos);
+  }
+
+  /** rows: [{r, pos}] / myBest: {rank, name, score, date} 또는 null */
+  function drawRanking(rows, myBest, me, latestPos) {
+    const ol = $('ranking-list');
+    ol.innerHTML = '';
+    const nums = [];
     if (!rows.length) {
       ol.innerHTML = `<div class="ranking-empty">${rankTab === 'all' ? '아직 등록된 기록이 없어요' : (me ? `'${escapeHtml(me)}' 이름의 기록이 없어요` : '게임이 끝난 뒤 닉네임을 등록하면<br>내 기록이 여기에 모여요')}</div>`;
     }
     for (const { r, pos } of rows) {
-      const latest = lastResult && lastResult.registered && lastResult.rank === pos;
-      const row = rankRow(r, pos, { latest });
+      const row = rankRow(r, pos, { latest: latestPos != null && latestPos === pos });
       ol.appendChild(row.li); nums.push(row);
     }
     // 내 순위 (전체 랭킹 탭 아래 고정): 내 닉네임의 최고 기록
     const my = $('my-rank');
     my.innerHTML = '';
-    const mine = Store.recordsOf(me);
     if (rankTab === 'all' && me) {
       my.classList.add('show');
       const lab = document.createElement('span'); lab.className = 'my-label'; lab.textContent = '내 순위';
-      if (mine.length) {
-        const b = mine[0];
+      if (myBest) {
+        const b = myBest;
         const pos = document.createElement('span'); pos.className = 'my-pos'; pos.textContent = b.rank;
         const name = document.createElement('span'); name.className = 'name'; name.textContent = b.name;
         const sc = document.createElement('span'); sc.className = 'score num'; sc.dataset.num = 'gold';
@@ -3360,6 +3528,7 @@ const UI = (() => {
     applyArt();
     Digits.set($('hud-score'), 0);
     Digits.set($('hud-best'), Store.get().best);
+    RankAPI.flushPending();   // 지난번에 서버로 못 보낸 랭킹 등록
   }
 
   return {
