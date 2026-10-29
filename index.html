@@ -1074,6 +1074,21 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background: url("assets/gameplay/evolution_panel_standalone_clean.png") 0 0 / 1280px 720px no-repeat;
 }
 
+/* v5.6 진화도 판 (.ui-play56): 의뢰자 제공 evolution_panel_v56.png 1672×941 (16:9 화면 전체, 투명)
+ *  그림 그대로 1280×720 크기로 맞추면 위쪽 큰 별·구름이 일시정지 버튼(1186~1254, 15~81)에 겹침
+ *  → 크기만 97% 로 줄이고 위치 (22.07, 18.09) 에 놓음 (크기 1241.6×698.4). 큰 별 위 끝이 일시정지 아래로 내려오고,
+ *     그 별이 스킨에 그려진 옛 진화도 별을 거의 다 덮는 자리 (오른쪽 끝 x≈1253, 아래 끝 y≈700 으로 옛 판도 다 덮음)
+ *  줄(적용 후): 1번 가운데 y 197, 간격 46.17 / 가구 칸 가운데 x 1120, 강조 띠 비율 그대로 155×27.6 (번호 원 오른쪽부터) */
+#stage.ui-play38.ui-play56 #screen-game .evo-panel {
+  width: 1280px; height: 720px; pointer-events: none;
+  background: url("assets/gameplay/evolution_panel_v56.png") 22.07px 18.09px / 1241.6px 698.4px no-repeat;
+}
+#stage.ui-play38.ui-play56 #screen-game .evo-list { left: 1097.1px; top: 173.96px; }
+#stage.ui-play38.ui-play56 #screen-game .evo-list li { height: 46.17px; }
+#stage.ui-play38.ui-play39.ui-play53.ui-play56 #screen-game .evo-list li.current::before {
+  left: -42.1px; top: 9.3px; width: 155px; height: 27.6px;
+}
+
 </style>
   <style>
 /* =========================================================
@@ -1630,6 +1645,8 @@ const CONFIG = {
       play53: ['../gameplay/evolution_row_highlight'],
       // 플레이 v5.5: 진화도 독립 판 (2560×1440 투명, 스킨 위에 덮음). 있으면 .ui-play55
       play55: ['../gameplay/evolution_panel_standalone_clean'],
+      // 플레이 v5.6: 의뢰자가 준 진화도 판 (1672×941 투명, 화면 전체 비율). 있으면 .ui-play56 — v5.5 판 대신, 줄 간격·위치를 이 그림에 맞춤
+      play56: ['../gameplay/evolution_panel_v56'],
       // 결과 화면 v4.1 (assets/result/). 모두 있으면 .ui-result41 → css/skin-result.css
       result41: [
         '../result/result_panel', '../result/result_mascot_original', '../result/result_tier_plate',
