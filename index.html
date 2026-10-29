@@ -1060,6 +1060,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background: url("assets/gameplay/evo_row_current.png") center / 100% 100% no-repeat;
 }
 
+/* v5.3 진화도 현재 단계 강조 (.ui-play53): evolution_row_highlight 2003×357 (비율 5.6) 를 비율 그대로 141×25 로
+ *  왼쪽은 번호 원 오른쪽 끝(x≈1074), 오른쪽은 줄 판 끝(x≈1215) 에 맞춤, 세로는 줄 가운데. 번호 원·가구는 가리지 않음 (줄 오른쪽 별 장식은 덮음) */
+#stage.ui-play38.ui-play39.ui-play53 #screen-game .evo-list li.current::before {
+  left: -31px; top: 9px; width: 141px; height: 25px;
+  background-image: url("assets/gameplay/evolution_row_highlight.png");
+}
+
 </style>
   <style>
 /* =========================================================
@@ -1612,6 +1619,8 @@ const CONFIG = {
       play38: ['../gameplay/gameplay_full_skin_clean_2560x1440'],
       // 플레이 v3.9: 진화도 현재 단계 강조 줄 (따로 묶음). 있으면 .ui-play39
       play39: ['../gameplay/evo_row_current'],
+      // 플레이 v5.3: 글자 없는 새 진화도 강조 띠 (따로 묶음). 있으면 .ui-play53 — evo_row_current 대신
+      play53: ['../gameplay/evolution_row_highlight'],
       // 결과 화면 v4.1 (assets/result/). 모두 있으면 .ui-result41 → css/skin-result.css
       result41: [
         '../result/result_panel', '../result/result_mascot_original', '../result/result_tier_plate',
