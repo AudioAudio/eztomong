@@ -605,9 +605,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
  *    → 칸의 가운데는 지키고, 그림 비율 그대로 크기만 맞춤
  *      로고 517×260 (가운데 640,158) / 시작 380×101 (y 335, v3.1 좌표) / 보조 높이 70 (가운데 405·640·875, y 555)
  *  - 버튼 글자·아이콘은 그림에 있음 → HTML 글자 숨김 / hover·pressed 는 그림 교체만
+ *  - v3.2 의뢰자 요청: 로고 키우고 아래로(560×281.6, y 130), 시작 y 425, 보조 줄 y 545 (서로 안 겹치게 간격 맞춤)
  * ========================================================= */
 #stage.ui-title30 .title-logo {
-  left: 381.5px; top: 28px; width: 517px; height: 260px; transform: none;
+  left: 360px; top: 130px; width: 560px; height: 281.6px; transform: none;
   background: url("assets/title30/title_logo.png") center / 100% 100% no-repeat;
 }
 #stage.ui-title30 .title-logo > * { display: none; }
@@ -622,16 +623,16 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 #stage.ui-title30 .title-menu .btn [data-ico] { display: none; }
 #stage.ui-title30 .title-menu .btn:hover, #stage.ui-title30 .title-menu .btn:active { filter: none; transform: none; }
 #stage.ui-title30 .title-menu .btn:focus-visible { outline: 3px solid #fff; outline-offset: -6px; border-radius: 40px; }
-#stage.ui-title30 .btn-start { left: 450px; top: 335px; width: 380px; height: 101px; background-image: url("assets/title30/start_normal.png"); }
+#stage.ui-title30 .btn-start { left: 450px; top: 425px; width: 380px; height: 101px; background-image: url("assets/title30/start_normal.png"); }
 #stage.ui-title30 .btn-start:hover  { background-image: url("assets/title30/start_hover.png"); }
 #stage.ui-title30 .btn-start:active { background-image: url("assets/title30/start_pressed.png"); }
-#stage.ui-title30 .title-sub .btn[data-action=codex]    { left: 295.1px; top: 520px; width: 219.7px; height: 70px; background-image: url("assets/title30/codex_normal.png"); }
+#stage.ui-title30 .title-sub .btn[data-action=codex]    { left: 295.1px; top: 545px; width: 219.7px; height: 70px; background-image: url("assets/title30/codex_normal.png"); }
 #stage.ui-title30 .title-sub .btn[data-action=codex]:hover    { background-image: url("assets/title30/codex_hover.png"); }
 #stage.ui-title30 .title-sub .btn[data-action=codex]:active   { background-image: url("assets/title30/codex_pressed.png"); }
-#stage.ui-title30 .title-sub .btn[data-action=ranking]  { left: 540.1px; top: 520px; width: 199.8px; height: 70px; background-image: url("assets/title30/ranking_normal.png"); }
+#stage.ui-title30 .title-sub .btn[data-action=ranking]  { left: 540.1px; top: 545px; width: 199.8px; height: 70px; background-image: url("assets/title30/ranking_normal.png"); }
 #stage.ui-title30 .title-sub .btn[data-action=ranking]:hover  { background-image: url("assets/title30/ranking_hover.png"); }
 #stage.ui-title30 .title-sub .btn[data-action=ranking]:active { background-image: url("assets/title30/ranking_pressed.png"); }
-#stage.ui-title30 .title-sub .btn[data-action=settings] { left: 769.9px; top: 520px; width: 210.2px; height: 70px; background-image: url("assets/title30/options_normal.png"); }
+#stage.ui-title30 .title-sub .btn[data-action=settings] { left: 769.9px; top: 545px; width: 210.2px; height: 70px; background-image: url("assets/title30/options_normal.png"); }
 #stage.ui-title30 .title-sub .btn[data-action=settings]:hover { background-image: url("assets/title30/options_hover.png"); }
 #stage.ui-title30 .title-sub .btn[data-action=settings]:active { background-image: url("assets/title30/options_pressed.png"); }
 
