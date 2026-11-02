@@ -597,7 +597,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 #stage.ui-title21 .title-sub .btn[data-action=settings]:active { background-image: url("assets/title/btn_settings_pressed.png"); }
 
 /* BEST 판 (260×76 → 화면 130×38, x1110 y20). 글자·숫자는 HTML */
-#stage.ui-title21 .title-best {
+#stage.ui-title21 .title-best, #stage.ui-title30 .title-best {   /* v5.4 최적화: title21 묶음을 빼서 title30 도 같은 판 사용 */
   left: 1110px; right: auto; top: 20px; width: 130px; height: 38px; padding: 0 6px; justify-content: center; gap: 3px; font-size: 15px; white-space: nowrap;   /* 7자리(1,234,567)까지 판 안에 */
   background: url("assets/title/ui_title_best.png") center / 100% 100% no-repeat; border: none; box-shadow: none; border-radius: 0;
 }
@@ -1533,7 +1533,7 @@ const CONFIG = {
     //   v4.2: 이지 캐릭터 + 구름 (1672×941, 의뢰자 제공 그림 그대로, 그림 영역 x223~1459 · y77~906). scale 0.116 → 보이는 부분 약 143×96
     //   구름 아래 끝 높이(y≈98)가 이전 드로퍼와 같도록 top -7 (위쪽 투명 여백만 화면 밖)
     //   오브젝트는 그림의 '불투명한 부분 맨 아래'에 overlap px 겹쳐 매달림
-    holder: { scale: 0.116, top: -7, overlap: 8 },
+    holder: { scale: 0.464, top: -7, overlap: 8 },   // v5.4 최적화: dropper.png 1672→418 (1/4) 로 줄여서 0.116×4
   },
   // 플레이 v3.8 스킨이 있을 때 board 를 이 값으로 덮어씀 (main.js). 그림 속 유리 상자에 맞춤
   //   그림: 안쪽 벽 x≈397·882, 바닥 윗면 y≈620, 데드라인 점선 y≈188 (그림에 그려져 있음)
@@ -1594,9 +1594,7 @@ const CONFIG = {
   assets: {
     object: (t) => `assets/objects/obj_${String(t.id).padStart(2, '0')}_${t.key}.png`,
     bg: {
-      title:    'assets/bg/bg_title.png',
-      // 타이틀 v2.1 (시범): 타이틀 화면에만 쓰는 새 배경. 도감·옵션은 위 bg_title 그대로
-      titleScreen: 'assets/title/bg_title.png',
+      // (v5.4 최적화) 예전 배경 bg_title·bg_game·title/bg_title 은 새 배경판으로 모두 대체되어 불러오지 않음
       // 타이틀 v3.0 (독립 PNG): 2560×1440 배경. title30 묶음이 모두 있을 때만
       titleScreen30: 'assets/title30/title_background_2560x1440.png',
       // 도감 v2.5: 도감 화면 전용 배경판 (제목·토끼·창 테두리가 그림에 포함)
@@ -1609,7 +1607,6 @@ const CONFIG = {
       settingsPanel: 'assets/options/options_panel_1280x720.png',
       // 플레이 v3.8: 플레이 화면 전체 스킨 (배경 + SCORE/NEXT/진화도 판 + 유리 상자 + 일시정지 그림 포함). play38 묶음이 있을 때만
       gameScreen: 'assets/gameplay/gameplay_full_skin_clean_2560x1440.png',
-      game:     'assets/bg/bg_game.png',
       gameover: 'assets/bg/bg_gameover.png',
       // v1.4 선택 오버레이 (배경 위·내용 아래, 가운데 플레이 영역은 비어 있는 그림). 파일이 없으면 생략
       starsOverlay: 'assets/bg/stars_overlay.png',
@@ -1649,15 +1646,7 @@ const CONFIG = {
         'btn_small_danger_normal', 'btn_small_danger_hover', 'btn_small_danger_pressed',
         'rank_row', 'rank_row_latest', 'my_rank_row', 'rank_badge_n', 'chip_left', 'chip_mid', 'chip_right', 'pill_title_small',
       ],
-      // 타이틀 v2.1~2.2 (assets/title/, v2.2 부터 원본 2배 → 화면 크기로 줄여 그림). 모두 있으면 .ui-title21 → css/skin-title.css
-      title21: [
-        '../title/bg_title', '../title/title_logo_with_bunny', '../title/btn_start_normal',
-        '../title/btn_codex_normal', '../title/btn_ranking_normal', '../title/btn_settings_normal',
-        // v2.2: hover/pressed, BEST 판
-        '../title/btn_start_hover', '../title/btn_start_pressed', '../title/btn_codex_hover', '../title/btn_codex_pressed',
-        '../title/btn_ranking_hover', '../title/btn_ranking_pressed', '../title/btn_settings_hover', '../title/btn_settings_pressed',
-        '../title/ui_title_best',
-      ],
+      // (v5.4 최적화) 타이틀 v2.1~2.2 묶음 title21 은 v3.0(title30)으로 대체되어 제거. BEST 판 assets/title/ui_title_best.png 만 남김
       // 타이틀 v3.0 (assets/title30/, 배경·로고·버튼 각각 독립 PNG). 모두 있으면 .ui-title30 → css/skin-title.css 아래쪽
       title30: ['../title30/title_background_2560x1440', '../title30/title_logo',
         '../title30/start_normal', '../title30/start_hover', '../title30/start_pressed', '../title30/codex_normal', '../title30/codex_hover', '../title30/codex_pressed',
@@ -1691,7 +1680,7 @@ const CONFIG = {
       // 옵션 v5.0 (요청 중): 바깥 투명 옵션 창. 있으면 .ui-opt50 — 배경판 대신 쓰고 뒤 화면(타이틀·게임)을 어둡게 보여 줌
       opt50: ['../options/options_panel_1280x720'],
       // 옵션 v5.2: 글자 없는 새 초기화 버튼·토글 (reset_*, toggle_* 는 같은 이름으로 교체). secondary_* 가 있으면 새 판으로 보고 .ui-opt52 → 글자를 게임에서 씀
-      opt52: ['../options/secondary_normal', '../options/secondary_hover', '../options/secondary_pressed'],
+      opt52: [],   // (v5.4 최적화) 보조 버튼 그림은 쓰는 곳이 없어 표시용 파일 없이 항상 켬
       // 확인 창 v3.4 (assets/confirm/). 모두 있으면 .ui-confirm34 → css/skin-confirm.css
       confirm34: ['../confirm/confirm_panel', '../confirm/confirm_btn_yes', '../confirm/confirm_btn_no'],
       // 플레이 화면 v3.8 (assets/gameplay/). 있으면 .ui-play38 → css/skin-play.css + board38 좌표
@@ -1700,8 +1689,7 @@ const CONFIG = {
       play39: ['../gameplay/evo_row_current'],
       // 플레이 v5.3: 글자 없는 새 진화도 강조 띠 (따로 묶음). 있으면 .ui-play53 — evo_row_current 대신
       play53: ['../gameplay/evolution_row_highlight'],
-      // 플레이 v5.5: 진화도 독립 판 (2560×1440 투명, 스킨 위에 덮음). 있으면 .ui-play55
-      play55: ['../gameplay/evolution_panel_standalone_clean'],
+      // (v5.4 최적화) 플레이 v5.5 진화도 판(play55)은 v5.6 판(play56)으로 대체되어 제거
       // 플레이 v5.6: 의뢰자가 준 진화도 판 (1672×941 투명, 화면 전체 비율). 있으면 .ui-play56 — v5.5 판 대신, 줄 간격·위치를 이 그림에 맞춤
       play56: ['../gameplay/evolution_panel_v56'],
       // 결과 화면 v4.1 (assets/result/). 모두 있으면 .ui-result41 → css/skin-result.css
