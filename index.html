@@ -54,7 +54,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ---------- 로딩 ---------- */
 /* 로딩 화면 (v4.0): 의뢰자 제공 그림 bg_loading.png (1672×941, 16:9) 을 화면에 꽉 차게. 제목·진행 막대는 아래 가운데 (그림 속 캐릭터·가구를 가리지 않게) */
-#screen-loading { background: #b9a5f0 url("assets/bg/bg_loading.png") center / cover no-repeat; }
+#screen-loading { background: #b9a5f0 url("assets/bg/bg_loading.webp") center / cover no-repeat; }
 .loading-box { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); text-align: center; color: #fff; }
 .loading-title { display: none; }   /* 그림이 꽉 차 있어 글자를 얹으면 가구와 겹침 → 진행 막대만 */
 .loading-bar { width: 320px; height: 14px; border-radius: 7px; background: rgba(255,255,255,0.4); overflow: hidden; box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 2px 10px rgba(70, 40, 150, 0.45); }
@@ -613,7 +613,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
  * ========================================================= */
 #stage.ui-title30 .title-logo {
   left: 360px; top: 130px; width: 560px; height: 281.6px; transform: none;
-  background: url("assets/title30/title_logo.png") center / 100% 100% no-repeat;
+  background: url("assets/title30/title_logo.webp") center / 100% 100% no-repeat;
 }
 #stage.ui-title30 .title-logo > * { display: none; }
 #stage.ui-title30 .deco-title { display: none !important; }
@@ -955,7 +955,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
  * ========================================================= */
 #stage.ui-confirm34 .confirm-card {
   width: 560px; height: 450px; padding: 0; border: none; border-radius: 0; box-shadow: none;
-  background: url("assets/confirm/confirm_panel.png") center / 100% 100% no-repeat;
+  background: url("assets/confirm/confirm_panel.webp") center / 100% 100% no-repeat;
 }
 #stage.ui-confirm34 .confirm-card .card-title {
   left: 108px; top: 34px; width: 344px; height: 76px; transform: none; padding: 0;
@@ -996,7 +996,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 #stage.ui-pause36 #overlay-pause .pause-card {
   width: 546px; height: 577px; padding: 0; border: none; border-radius: 0; box-shadow: none;
-  background: url("assets/pause/pause_panel.png") center / 100% 100% no-repeat;
+  background: url("assets/pause/pause_panel.webp") center / 100% 100% no-repeat;
 }
 #stage.ui-pause36 #overlay-pause .card-title {
   left: 166px; top: 85px; width: 266px; height: 59px; transform: none; padding: 0;
@@ -1127,7 +1127,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
  *  줄(적용 후): 1번 가운데 y 197, 간격 46.17 / 가구 칸 가운데 x 1120, 강조 띠 비율 그대로 155×27.6 (번호 원 오른쪽부터) */
 #stage.ui-play38.ui-play56 #screen-game .evo-panel {
   width: 1280px; height: 720px; pointer-events: none;
-  background: url("assets/gameplay/evolution_panel_v56.png") 22.07px 18.09px / 1241.6px 698.4px no-repeat;
+  background: url("assets/gameplay/evolution_panel_v56.webp") 22.07px 18.09px / 1241.6px 698.4px no-repeat;
 }
 #stage.ui-play38.ui-play56 #screen-game .evo-list { left: 1097.1px; top: 173.96px; }
 #stage.ui-play38.ui-play56 #screen-game .evo-list li { height: 46.17px; }
@@ -1264,7 +1264,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 #stage.ui-result47 .gameover-card .mascot-top {
   left: 69px; top: -151px; width: 525px; height: 244px; z-index: 2;
-  background: url("assets/result47/approved_character_cloud_title_full.png") center / 100% 100% no-repeat !important;
+  background: url("assets/result47/approved_character_cloud_title_full.webp") center / 100% 100% no-repeat !important;
 }
 #stage.ui-result47 .gameover-card .card-title { display: none; }
 #stage.ui-result47 .gameover-card .result-label { top: 98px; width: 668px; font-size: 19px; color: #5941bb; }
@@ -1596,18 +1596,18 @@ const CONFIG = {
     bg: {
       // (v5.4 최적화) 예전 배경 bg_title·bg_game·title/bg_title 은 새 배경판으로 모두 대체되어 불러오지 않음
       // 타이틀 v3.0 (독립 PNG): 2560×1440 배경. title30 묶음이 모두 있을 때만
-      titleScreen30: 'assets/title30/title_background_2560x1440.png',
+      titleScreen30: 'assets/title30/title_background_2560x1440.webp',
       // 도감 v2.5: 도감 화면 전용 배경판 (제목·토끼·창 테두리가 그림에 포함)
-      codexScreen: 'assets/codex/codex_backplate.png',
+      codexScreen: 'assets/codex/codex_backplate.webp',
       // 랭킹 v2.9: 랭킹 화면 전용 배경판 (배경·토끼 구름·제목·닫기 그림 포함, rank29 묶음이 모두 있을 때만)
-      rankingScreen: 'assets/ranking/ranking_backplate.png',
+      rankingScreen: 'assets/ranking/ranking_backplate.webp',
       // 옵션 v3.2: 옵션 화면 전용 배경판 (제목·토끼·항목 이름·아이콘·닫기 그림 포함, opt32 묶음이 모두 있을 때만)
-      settingsScreen: 'assets/options/options_backplate_1280x720.png',
+      settingsScreen: 'assets/options/options_backplate_1280x720.webp',
       // 옵션 v5.0 (요청 중): 바깥이 투명한 옵션 창 1280×720. 있으면(opt50) 뒤 화면을 어둡게 비춰 보이게
       settingsPanel: 'assets/options/options_panel_1280x720.png',
       // 플레이 v3.8: 플레이 화면 전체 스킨 (배경 + SCORE/NEXT/진화도 판 + 유리 상자 + 일시정지 그림 포함). play38 묶음이 있을 때만
-      gameScreen: 'assets/gameplay/gameplay_full_skin_clean_2560x1440.png',
-      gameover: 'assets/bg/bg_gameover.png',
+      gameScreen: 'assets/gameplay/gameplay_full_skin_clean_2560x1440.webp',
+      gameover: 'assets/bg/bg_gameover.webp',
       // v1.4 선택 오버레이 (배경 위·내용 아래, 가운데 플레이 영역은 비어 있는 그림). 파일이 없으면 생략
       starsOverlay: 'assets/bg/stars_overlay.png',
       dustOverlay:  'assets/bg/cloud_dust_overlay.png',
@@ -1648,12 +1648,12 @@ const CONFIG = {
       ],
       // (v5.4 최적화) 타이틀 v2.1~2.2 묶음 title21 은 v3.0(title30)으로 대체되어 제거. BEST 판 assets/title/ui_title_best.png 만 남김
       // 타이틀 v3.0 (assets/title30/, 배경·로고·버튼 각각 독립 PNG). 모두 있으면 .ui-title30 → css/skin-title.css 아래쪽
-      title30: ['../title30/title_background_2560x1440', '../title30/title_logo',
+      title30: ['../title30/title_background_2560x1440.webp', '../title30/title_logo.webp',
         '../title30/start_normal', '../title30/start_hover', '../title30/start_pressed', '../title30/codex_normal', '../title30/codex_hover', '../title30/codex_pressed',
         '../title30/ranking_normal', '../title30/ranking_hover', '../title30/ranking_pressed', '../title30/options_normal', '../title30/options_hover', '../title30/options_pressed'],
       // 도감 v2.5 (assets/codex/). 모두 있으면 .ui-codex25 → css/skin-codex.css
       codex25: [
-        '../codex/codex_backplate', '../codex/codex_cell_normal', '../codex/codex_cell_selected', '../codex/codex_cell_locked',
+        '../codex/codex_backplate.webp', '../codex/codex_cell_normal', '../codex/codex_cell_selected', '../codex/codex_cell_locked',
         '../codex/codex_badge_normal', '../codex/codex_badge_selected', '../codex/codex_item_stage', '../codex/codex_description_panel',
         '../codex/codex_close_normal', '../codex/codex_locked_silhouette',
         // v2.6
@@ -1664,7 +1664,7 @@ const CONFIG = {
       // 랭킹 v2.9 (assets/ranking/). 모두 있으면 .ui-rank29 → css/skin-ranking.css
       //  배경판(ranking_backplate)에 배경·토끼 구름·제목·닫기 그림이 모두 들어 있음
       rank29: [
-        '../ranking/ranking_backplate', '../ranking/ranking_tab_on', '../ranking/ranking_tab_off', '../ranking/ranking_table_header',
+        '../ranking/ranking_backplate.webp', '../ranking/ranking_tab_on', '../ranking/ranking_tab_off', '../ranking/ranking_table_header',
         '../ranking/ranking_row_normal', '../ranking/ranking_row_1', '../ranking/ranking_row_2', '../ranking/ranking_row_3',
         '../ranking/ranking_row_mine', '../ranking/ranking_medal_1', '../ranking/ranking_medal_2', '../ranking/ranking_medal_3',
       ],
@@ -1672,7 +1672,7 @@ const CONFIG = {
       rank30: ['../ranking/ranking_close_hover', '../ranking/ranking_close_pressed', '../ranking/ranking_row_latest', '../ranking/ranking_row_latest_overlay'],
       // 옵션 v3.2 (assets/options/). 모두 있으면 .ui-opt32 → css/skin-options.css
       opt32: [
-        '../options/options_backplate_1280x720', '../options/slider_track', '../options/slider_knob', '../options/toggle_on', '../options/toggle_off',
+        '../options/options_backplate_1280x720.webp', '../options/slider_track', '../options/slider_knob', '../options/toggle_on', '../options/toggle_off',
         '../options/reset_normal', '../options/reset_hover', '../options/reset_pressed',
       ],
       // 옵션 닫기 hover/pressed (v3.3, 선택 묶음). 모두 있으면 .ui-opt32close
@@ -1682,16 +1682,16 @@ const CONFIG = {
       // 옵션 v5.2: 글자 없는 새 초기화 버튼·토글 (reset_*, toggle_* 는 같은 이름으로 교체). secondary_* 가 있으면 새 판으로 보고 .ui-opt52 → 글자를 게임에서 씀
       opt52: [],   // (v5.4 최적화) 보조 버튼 그림은 쓰는 곳이 없어 표시용 파일 없이 항상 켬
       // 확인 창 v3.4 (assets/confirm/). 모두 있으면 .ui-confirm34 → css/skin-confirm.css
-      confirm34: ['../confirm/confirm_panel', '../confirm/confirm_btn_yes', '../confirm/confirm_btn_no'],
+      confirm34: ['../confirm/confirm_panel.webp', '../confirm/confirm_btn_yes', '../confirm/confirm_btn_no'],
       // 플레이 화면 v3.8 (assets/gameplay/). 있으면 .ui-play38 → css/skin-play.css + board38 좌표
-      play38: ['../gameplay/gameplay_full_skin_clean_2560x1440'],
+      play38: ['../gameplay/gameplay_full_skin_clean_2560x1440.webp'],
       // 플레이 v3.9: 진화도 현재 단계 강조 줄 (따로 묶음). 있으면 .ui-play39
       play39: ['../gameplay/evo_row_current'],
       // 플레이 v5.3: 글자 없는 새 진화도 강조 띠 (따로 묶음). 있으면 .ui-play53 — evo_row_current 대신
       play53: ['../gameplay/evolution_row_highlight'],
       // (v5.4 최적화) 플레이 v5.5 진화도 판(play55)은 v5.6 판(play56)으로 대체되어 제거
       // 플레이 v5.6: 의뢰자가 준 진화도 판 (1672×941 투명, 화면 전체 비율). 있으면 .ui-play56 — v5.5 판 대신, 줄 간격·위치를 이 그림에 맞춤
-      play56: ['../gameplay/evolution_panel_v56'],
+      play56: ['../gameplay/evolution_panel_v56.webp'],
       // 결과 화면 v4.1 (assets/result/). 모두 있으면 .ui-result41 → css/skin-result.css
       result41: [
         '../result/result_panel', '../result/result_mascot_original', '../result/result_tier_plate',
@@ -1705,7 +1705,7 @@ const CONFIG = {
       // 결과 화면 v4.7 (assets/result47/). 모두 있으면 .ui-result47 → css/skin-result47.css (v4.1~4.2 결과 화면 위에 덮어씀)
       //  캐릭터+제목판은 v4.4 승인 원화(approved_character_cloud_title_full), 나머지는 v4.7 독립 PNG
       result47: [
-        '../result47/result_panel', '../result47/approved_character_cloud_title_full', '../result47/ranking_panel',
+        '../result47/result_panel', '../result47/approved_character_cloud_title_full.webp', '../result47/ranking_panel',
         '../result47/new_record_label_blank', '../result47/evolution_panel',
         '../result47/home_btn_normal', '../result47/home_btn_hover', '../result47/home_btn_pressed',
         '../result47/retry_btn_normal', '../result47/retry_btn_hover', '../result47/retry_btn_pressed',
@@ -1715,7 +1715,7 @@ const CONFIG = {
       result48: ['../result47/new_record_label_clear'],
       // 일시정지 v3.6 (assets/pause/, 아트 요청 중). 모두 있으면 .ui-pause36 → css/skin-pause.css. 없으면 지금 일시정지 창 그대로
       pause36: [
-        '../pause/pause_panel', '../pause/pause_btn_main_normal', '../pause/pause_btn_main_hover', '../pause/pause_btn_main_pressed',
+        '../pause/pause_panel.webp', '../pause/pause_btn_main_normal', '../pause/pause_btn_main_hover', '../pause/pause_btn_main_pressed',
         '../pause/pause_btn_sub_normal', '../pause/pause_btn_sub_hover', '../pause/pause_btn_sub_pressed',
         '../pause/pause_icon_resume', '../pause/pause_icon_retry', '../pause/pause_icon_settings', '../pause/pause_icon_home',
       ],
@@ -2012,7 +2012,7 @@ const Assets = (() => {
     }
     for (const [kit, names] of Object.entries(CONFIG.assets.uiKits)) {
       const missing = [];
-      jobs.push(Promise.all(names.map((n) => loadImage(`assets/ui/${n}.png`).then((img) => { if (!img) missing.push(n); })))
+      jobs.push(Promise.all(names.map((n) => loadImage(`assets/ui/${n}${/\.(png|webp)$/.test(n) ? '' : '.png'}`).then((img) => { if (!img) missing.push(n); })))   // v5.5: 확장자가 있으면 그대로 (webp)
         .then(() => {
           const preview = (CONFIG.assets.previewKits || []).includes(kit);
           const asked = new URLSearchParams(location.search).getAll('kit').includes(kit);
